@@ -1,0 +1,8 @@
+services:
+  kafka-init:
+    build:
+      context: ./shared/kafka
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    restart: on-failure
