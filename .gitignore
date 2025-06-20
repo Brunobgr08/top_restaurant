@@ -1,0 +1,69 @@
+# Bytecode Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+
+# Arquivos temporários e backups
+*.bak
+*.swp
+*.swo
+*~
+
+# Ambiente virtual
+.venv/
+env/
+venv/
+
+# Configurações de IDEs/editors
+.vscode/
+.idea/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+*.seed
+.env
+.env.*
+docker-compose.override.yml
+
+# Banco de dados (volumes locais)
+data/
+db_data/
+pgdata/
+*.sqlite3
+
+# Cache do pip
+pip-wheel-metadata/
+__pypackages__/
+*.egg-info/
+build/
+dist/
+
+# Arquivos de cache de testes
+.coverage
+.cache/
+.tox/
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# Testes
+test-reports/
+*.coverage
+
+# EditorConfig
+.editorconfig
+
+# Node
+node_modules/
+dist/
+build/
