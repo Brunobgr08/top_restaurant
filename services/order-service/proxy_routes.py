@@ -35,8 +35,8 @@ async def list_payments_proxy(path: str, request: Request):
     return await proxy_request(request, upstream_url)
 
 
-@router.api_route("/payments-confirm/{path:path}", methods=["POST"])
+@router.api_route("/payments/confirm/{path:path}", methods=["PUT"])
 async def confirm_payment_proxy(path: str, request: Request):
-    upstream_url = f"http://payment-service:5002/api/v1/confirm/{path}"
+    upstream_url = f"http://payment-service:5002/api/v1/payments/confirm/{path}"
     return await proxy_request(request, upstream_url)
 

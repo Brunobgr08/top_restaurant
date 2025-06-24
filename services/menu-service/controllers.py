@@ -7,10 +7,10 @@ from models import MenuItem
 from schemas import MenuItemCreate, MenuItemUpdate
 
 
-def list_menu_items(db: Session):
+def get_all_menu_items(db: Session):
     return db.query(MenuItem).all()
 
-def get_item_by_id(db: Session, item_id: UUID) -> Optional[MenuItem]:
+def get_menu_item_by_id(db: Session, item_id: UUID) -> MenuItem:
 
     item = db.query(MenuItem).filter_by(item_id=str(item_id)).first()
 
@@ -29,30 +29,9 @@ def create_menu_item(db: Session, item_data: MenuItemCreate):
 
     return item
 
-def update_menu_item(db: Session, item_id: UUID, update_data: MenuItemUpdate):
+def update_menu_item(db: Session, item_id: UUID, update_data: MenuItemUpdate) -> MenuItem:
 
-    # item = db.query(MenuItem).filter(MenuItem.item_id == item_id).first()
-
-    # if not item:
-    #     raise ValueError(f"Item {item_id} não encontrado")
-
-    # if item:
-    #     for key, value in item_data.model_dump().items():
-    #         setattr(item, key, value)
-    #     db.commit()
-    #     db.refresh(item)
-
-    #     publish_menu_updated(item)
-
-    # return item
-
-    # item = db.query(MenuItem).get(item_id)
-
-    item = get_item_by_id(db, item_id)
-
-    if not item:
-        # raise HTTPException(status_code=404, detail="Item não encontrado")
-        return None
+    item = get_menu_item_by_id(db, item_id)
 
     for field, value in update_data.model_dump(exclude_unset=True).items():
         setattr(item, field, value)
@@ -64,11 +43,9 @@ def update_menu_item(db: Session, item_id: UUID, update_data: MenuItemUpdate):
 
     return item
 
-def delete_menu_item(db: Session, item_id: str):
-    item = get_item_by_id(db, item_id)
-    if not item:
-        # raise HTTPException(status_code=404, detail="Item não encontrado")
-        return None
+def delete_menu_item(db: Session, item_id: UUID):
+    item = get_menu_item_by_id(db, item_id)
+
     db.delete(item)
     db.commit()
     return None

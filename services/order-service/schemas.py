@@ -6,6 +6,7 @@ from shared.enums import PaymentStatus, PaymentType
 
 class OrderBase(BaseModel):
     customer_name: str = Field(..., min_length=1)
+    item_id: UUID
     item_name: str = Field(..., min_length=1)
     quantity: int = Field(..., gt=0)
     total_price: float = Field(..., gt=0)
@@ -18,8 +19,14 @@ class OrderBase(BaseModel):
         description="Tipo de pagamento: 'online' ou 'manual'"
     )
 
-class OrderCreate(OrderBase):
-    pass
+class OrderCreate(BaseModel):
+    item_id: UUID
+    customer_name: str = Field(..., min_length=1)
+    quantity: int = Field(..., gt=0)
+    payment_type: PaymentType = Field(
+        default=PaymentType.manual,
+        description="Tipo de pagamento: 'online' ou 'manual'"
+    )
 
 class OrderResponse(OrderBase):
     order_id: UUID

@@ -10,6 +10,7 @@ class Order(Base):
 
     order_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     customer_name = Column(String(100), nullable=False)
+    item_id = Column(UUID(as_uuid=True), nullable=False)
     item_name = Column(String(100), nullable=False)
     quantity = Column(Integer, nullable=False)
     total_price = Column(Numeric(10, 2), nullable=False)

@@ -12,6 +12,12 @@ confluent-kafka==2.3.0
 # Validação de dados
 pydantic==2.6.0
 
+# Cache
+redis==5.0.1
+
+# Requests
+requests==2.31.0
+
 # Testes (opcional)
 pytest==7.4.4
 httpx==0.26.0

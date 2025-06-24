@@ -1,6 +1,6 @@
-from shared.kafka.producer import get_kafka_producer
-from datetime import datetime
 import logging
+from datetime import datetime
+from shared.kafka.producer import get_kafka_producer
 
 logger = logging.getLogger(__name__)
 

@@ -3,6 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS orders (
     order_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     customer_name VARCHAR(100) NOT NULL,
+    item_id UUID NOT NULL,
     item_name VARCHAR(100) NOT NULL,
     quantity INTEGER NOT NULL,
     total_price NUMERIC(10, 2) NOT NULL,
