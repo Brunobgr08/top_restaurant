@@ -1,44 +1,3 @@
-# import json
-# import logging
-# from typing import Callable, Dict, Any
-# from confluent_kafka import Consumer, KafkaException
-
-# logger = logging.getLogger("kafka-consumer")
-# logger.setLevel(logging.INFO)
-
-# class KafkaConsumerWrapper:
-#     def __init__(self, bootstrap_servers: str = 'kafka:9092', group_id: str = None):
-#         self._conf = {
-#             'bootstrap.servers': bootstrap_servers,
-#             'group.id': group_id or 'payment-service-group',
-#             'auto.offset.reset': 'earliest',
-#             'enable.auto.commit': False,
-#         }
-#         self._consumer = Consumer(self._conf)
-
-#     def subscribe_and_consume(self, topics: list, callback: Callable[[Dict[str, Any]], None]):
-#         """Consome mensagens continuamente e chama o callback"""
-#         self._consumer.subscribe(topics)
-
-#         try:
-#             while True:
-#                 msg = self._consumer.poll(timeout=1.0)
-#                 if msg is None:
-#                     continue
-#                 if msg.error():
-#                     raise KafkaException(msg.error())
-
-#                 try:
-#                     message_data = json.loads(msg.value().decode('utf-8'))
-#                     callback(message_data)
-#                     self._consumer.commit(asynchronous=False)
-#                 except json.JSONDecodeError as e:
-#                     logger.error(f"Erro ao decodificar mensagem: {str(e)}")
-#         finally:
-#             self._consumer.close()
-
-
-
 import json
 import logging
 from typing import Callable, Dict, Any
@@ -52,7 +11,7 @@ class KafkaConsumerWrapper:
     def __init__(self, bootstrap_servers: str = 'kafka:9092', group_id: str = None):
         self._conf = {
             'bootstrap.servers': bootstrap_servers,
-            'group.id': group_id or 'payment-service-group',
+            'group.id': group_id,
             'auto.offset.reset': 'earliest',
             'enable.auto.commit': False,
             'session.timeout.ms': 10000,
@@ -97,6 +56,37 @@ class KafkaConsumerWrapper:
 
                 callback(message_data)
                 self._consumer.commit(asynchronous=False)
+        finally:
+            self._consumer.close()
+            logger.info("Consumer fechado corretamente")
+
+    @handle_errors
+    def subscribe_and_consume_multiple(self, topic_callbacks: Dict[str, Callable[[Dict[str, Any]], None]]):
+        """Consome mensagens com callbacks diferentes por tópico"""
+        topics = list(topic_callbacks.keys())
+        self._consumer.subscribe(topics)
+        logger.info(f"Inscrito nos tópicos: {topics}")
+
+        try:
+            while True:
+                msg = self._consumer.poll(timeout=1.0)
+                if msg is None:
+                    continue
+
+                if msg.error():
+                    logger.error(f"Erro no consumer: {msg.error()}")
+                    continue
+
+                topic = msg.topic()
+                message_data = json.loads(msg.value().decode('utf-8'))
+                logger.debug(f"Mensagem recebida do tópico {topic}: {message_data}")
+
+                callback = topic_callbacks.get(topic)
+                if callback:
+                    callback(message_data)
+
+                self._consumer.commit(asynchronous=False)
+
         finally:
             self._consumer.close()
             logger.info("Consumer fechado corretamente")
