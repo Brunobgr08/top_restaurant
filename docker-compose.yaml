@@ -33,6 +33,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
+    restart: unless-stopped
     volumes:
       - kafka_data:/var/lib/kafka
 
@@ -212,23 +213,17 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # frontend:
-  #   build: ./frontend
-  #   ports:
-  #     - '3000:80'
-  #   depends_on:
-  #     - order-service # Depende do order-service que fornece a API
-  #   environment:
-  #     - NODE_ENV=production
-  #   networks:
-  #     - default
-
-  # frontend:
-  #   image: nginx:alpine
-  #   volumes:
-  #     - ./frontend:/usr/share/nginx/html
-  #   ports:
-  #     - "8080:80"
+  frontend:
+    build: ./frontend
+    ports:
+      - '3000:80'
+    depends_on:
+      - order-service # Depende do order-service que fornece a API
+      - menu-service # Depende do menu-service que fornece a API
+    environment:
+      - NODE_ENV=production
+    networks:
+      - default
 
 volumes:
   zookeeper_data:

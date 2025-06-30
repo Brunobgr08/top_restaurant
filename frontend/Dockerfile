@@ -1,5 +1,5 @@
 # Estágio de construção
-FROM node:18-alpine as builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -8,7 +8,9 @@ RUN npm run build
 
 # Estágio de produção
 FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
+WORKDIR /usr/share/nginx/html
+COPY --from=builder /app/dist .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN rm -rf /etc/nginx/conf.d/default.conf.default
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
