@@ -38,8 +38,7 @@ async def confirm_manual_payment(
 ):
     try:
         order = get_order(db, order_id)
-        logger.info(f"Buscando pagamento para order_id {order_id}")
-        logger.info(f"Order {order}")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao buscar pagamento: {str(e)}")
 

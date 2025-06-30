@@ -10,8 +10,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("payment-consumer")
 
 def process_payment_event(message: dict, db: Session):
-    """Callback que processa cada mensagem recebida"""
-    logger.info(f"Processando pagamento: {message}")
 
     try:
         if message.get('event_type') == 'orders':
