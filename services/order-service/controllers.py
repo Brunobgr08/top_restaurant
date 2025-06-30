@@ -3,12 +3,11 @@ import requests
 import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from models import Order
+from models import Order, OrderItem
 from schemas import OrderCreate
 from kafka_producer import publish_order_created_event
 from cache import set_cached_menu_item, get_cached_menu_item
 from shared.enums import PaymentStatus
-# from kafka_producer import publish_order_status_changed_event
 
 logger = logging.getLogger(__name__)
 
@@ -29,24 +28,34 @@ def fetch_menu_item(item_id: str) -> dict:
 def create_order(db: Session, order_data: OrderCreate):
     try:
 
-        item_data = fetch_menu_item(order_data.item_id)
+        total_price = 0
+        order_items = []
 
-        if not item_data:
-            raise ValueError(f"Item com ID '{order_data.item_id}' não encontrado no menu.")
+        for item in order_data.items:
+            item_data = fetch_menu_item(str(item.item_id))
 
-        if not item_data['available']:
-            raise ValueError(f"Item com ID '{order_data.item_id}' não está disponível.")
+            if not item_data:
+                raise ValueError(f"Item com ID '{item.item_id}' não encontrado no menu.")
+            if not item_data['available']:
+                raise ValueError(f"Item com ID '{item.item_id}' não está disponível.")
 
-        total_price = item_data['price'] * order_data.quantity
+            total_price += item_data['price'] * item.quantity
+
+            order_item = OrderItem(
+                item_id=item.item_id,
+                item_name=item_data["name"],
+                quantity=item.quantity,
+                unit_price=item_data["price"]
+            )
+
+            order_items.append(order_item)
 
         order = Order(
-            item_id=order_data.item_id,
-            item_name=item_data["name"],
-            quantity=order_data.quantity,
-            total_price=total_price,
             customer_name=order_data.customer_name,
             payment_type=order_data.payment_type,
-            status=PaymentStatus.pending
+            total_price=total_price,
+            status=PaymentStatus.pending,
+            items=order_items # Relação 1:N
         )
 
         db.add(order)
@@ -55,11 +64,19 @@ def create_order(db: Session, order_data: OrderCreate):
 
         logger.info(f"Novo pedido criado - ID: {order.order_id}")
 
+        # Kafka Event
         publish_order_created_event({
             "order_id": str(order.order_id),
             "customer_name": order.customer_name,
-            "item_name": order.item_name,
-            "quantity": order.quantity,
+            "items": [
+                {
+                    "item_id": str(item.item_id),
+                    "item_name": item.item_name,
+                    "quantity": item.quantity,
+                    "unit_price": float(item.unit_price)
+                }
+                for item in order.items
+            ],
             "total_price": float(order.total_price),
             "payment_type": order.payment_type,
             "status": order.status

@@ -11,13 +11,39 @@ router = APIRouter()
 async def add_order(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
 
-    required_fields = ['customer_name', 'item_id', 'quantity', 'payment_type']
+    required_fields = ['customer_name', 'items', 'payment_type']
     missing_fields = [f for f in required_fields if f not in data]
     if missing_fields:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Campos obrigatórios ausentes: {missing_fields}"
+            detail=f"Campos obrigatórios ausentes: {missing_fields}."
         )
+
+    if not isinstance(data['items'], list) or not data['items']:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O campo 'items' deve ser uma lista não vazia."
+        )
+
+    for item in data['items']:
+        if not isinstance(item, dict):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cada item na lista deve ser um objeto com 'item_id' e 'quantity'."
+            )
+        if 'item_id' not in item or 'quantity' not in item:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cada item na lista deve ser um objeto com 'item_id' e 'quantity'."
+            )
+
+    # for idx, item in enumerate(data['items']):
+    #     for field in ['item_id', 'quantity']:
+    #         if field not in item:
+    #             raise HTTPException(
+    #                 status_code=status.HTTP_400_BAD_REQUEST,
+    #                 detail=f"Campo '{field}' ausente no item #{idx + 1}"
+    #             )
 
     try:
         order = OrderCreate(**data)
