@@ -29,12 +29,6 @@ app.include_router(
     tags=["Menu Items"]
 )
 
-# app.include_router(
-#     proxy_router,
-#     prefix="/api/v1",
-#     tags=["Payments Proxy"]
-# )
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("menu-service")
 logger.info("✅ Menu Service iniciado")

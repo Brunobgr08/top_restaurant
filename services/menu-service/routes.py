@@ -20,7 +20,7 @@ def get_menu_item(item_id: UUID, db: Session = Depends(get_db)):
     item = get_menu_item_by_id(db, item_id)
     return item
 
-@router.post("/menu", response_model=MenuItemResponse)
+@router.post("/menu", response_model=MenuItemResponse, status_code=status.HTTP_201_CREATED)
 def create(item: MenuItemCreate, db: Session = Depends(get_db)):
     return create_menu_item(db, item)
 

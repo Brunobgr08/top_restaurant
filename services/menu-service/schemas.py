@@ -1,24 +1,23 @@
-from pydantic import BaseModel, Field
-from uuid import UUID
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
+
 class MenuItemBase(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1)
     description: Optional[str] = None
-    price: float
-    available: bool = True
+    price: float = Field(..., gt=0)
+    available: bool = Field(default=True)
 
 class MenuItemCreate(MenuItemBase):
     pass
 
 class MenuItemUpdate(BaseModel):
-    name: Optional[str] = None
+    name: Optional[str] = Field(default=None, min_length=1)
     description: Optional[str] = None
-    price: Optional[float] = None
-    available: Optional[bool] = None
+    price: Optional[float] = Field(default=None, gt=0)
+    available: Optional[bool] = Field(default=None)
 
 class MenuItemResponse(MenuItemBase):
-    item_id: UUID
+    item_id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
