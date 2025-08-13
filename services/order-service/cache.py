@@ -1,12 +1,31 @@
+import os
 import redis
 import json
-import os
+from dotenv import load_dotenv
 
-REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
-REDIS_PORT = os.getenv('REDIS_PORT', 6379)
-CACHE_TTL_SECONDS = 300
+# Carregar variáveis de ambiente
+load_dotenv()
 
-redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+# Configuração Redis via variáveis de ambiente
+REDIS_URL = os.getenv('REDIS_URL')
+if REDIS_URL:
+    # Se REDIS_URL estiver definida, usar diretamente
+    redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+else:
+    # Caso contrário, usar host e porta individuais
+    REDIS_HOST = os.getenv('REDIS_HOST', 'redis')
+    REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+    REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', None)
+
+    redis_client = redis.Redis(
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        decode_responses=True
+    )
+
+# TTL configurável via variável de ambiente
+CACHE_TTL_SECONDS = int(os.getenv('CACHE_TTL_SECONDS', 300))
 
 def set_cached_menu_item(item_id: str, data: dict):
     redis_client.setex(f"menu:item:{item_id}", CACHE_TTL_SECONDS, json.dumps(data))

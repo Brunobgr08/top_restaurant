@@ -18,6 +18,9 @@ redis==5.0.1
 # Requests
 requests==2.31.0
 
+# Variáveis de ambiente
+python-dotenv==1.0.0
+
 # Testes
 pytest==7.4.4
 httpx==0.26.0
