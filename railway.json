@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "DOCKER",
+    "dockerfile": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "docker-compose -f docker-compose.production.yaml up"
+  }
+}
