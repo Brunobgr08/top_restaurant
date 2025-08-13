@@ -1,6 +1,8 @@
 import logging
 import requests
 import json
+from fastapi import status, HTTPException
+from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models import Order, OrderItem
@@ -32,17 +34,24 @@ def create_order(db: Session, order_data: OrderCreate):
         order_items = []
 
         for item in order_data.items:
-            item_data = fetch_menu_item(str(item.item_id))
+            item_uuid = UUID(item.item_id)
+            item_data = fetch_menu_item(str(item_uuid))
 
             if not item_data:
-                raise ValueError(f"Item com ID '{item.item_id}' não encontrado no menu.")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Item com ID '{str(item.item_id)}' não encontrado no menu."
+                )
             if not item_data['available']:
-                raise ValueError(f"Item com ID '{item.item_id}' não está disponível.")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Item com ID '{str(item.item_id)}' não está disponível."
+                )
 
             total_price += item_data['price'] * item.quantity
 
             order_item = OrderItem(
-                item_id=item.item_id,
+                item_id=str(item.item_id),
                 item_name=item_data["name"],
                 quantity=item.quantity,
                 unit_price=item_data["price"]
@@ -94,7 +103,6 @@ def get_orders(db: Session, skip: int = 0, limit: int = 100):
 
 def update_order_status(db: Session, order_id: str, new_status: str) -> Order:
     try:
-        # Busca o pedido com lock para evitar condições de corrida
         order = db.execute(
             select(Order)
             .where(Order.order_id == order_id)

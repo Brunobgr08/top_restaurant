@@ -29,14 +29,14 @@ async def proxy_request(request: Request, upstream_url: str):
         return Response(content=f"Erro ao redirecionar requisição: {str(e)}", status_code=500)
 
 
-@router.api_route("/payments/{path:path}", methods=["GET"])
-async def list_payments_proxy(path: str, request: Request):
-    upstream_url = f"http://payment-service:5002/api/v1/payments/{path}"
+@router.api_route("/payments", methods=["GET"])
+async def list_payments_proxy(request: Request):
+    upstream_url = f"http://payment-service:5002/api/v1/payments"
     return await proxy_request(request, upstream_url)
 
 
-@router.api_route("/payments/confirm/{path:path}", methods=["PUT"])
-async def confirm_payment_proxy(path: str, request: Request):
-    upstream_url = f"http://payment-service:5002/api/v1/payments/confirm/{path}"
+@router.api_route("/payments/confirm/{order_id}", methods=["PUT"])
+async def confirm_payment_proxy(order_id: str, request: Request):
+    upstream_url = f"http://payment-service:5002/api/v1/payments/confirm/{order_id}"
     return await proxy_request(request, upstream_url)
 
