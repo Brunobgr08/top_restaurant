@@ -1,286 +1,244 @@
-# README.md
+# TopRestaurant
 
 ## 🍽️ Sistema de Pedidos - Microserviços com Kafka e Docker
 
 ### Descrição
 
-Aplicação backend distribuída simulando um sistema de pedidos para restaurante. Os serviços se comunicam via Apache Kafka. Estruturado em microserviços com Python (Flask ou FastAPI), usando Docker para conteinerização.
+Este projeto é uma aplicação backend simulando um sistema de pedidos para restaurante baseado em uma arquitetura de microserviços, com múltiplos serviços especializados em diferentes funcionalidades: autenticação, gerenciamento de cardápio, pedidos, pagamentos e notificações.
 
-### 🔧 Serviços
+Os serviços se comunicam via Apache Kafka usando arquitetura KRaft (sem Zookeeper). Microserviços estruturados em Python (FastAPI), usando Docker para conteinerização.
+Há um frontend simples para interação com o sistema, construído com React, TypeScript e Vite.
 
-- **menu-service**: fornece e gerencia o cardápio.
-- **order-service**: recebe pedidos, publica em `order_created`.
-- **payment-service**: processa pagamentos, publica em `payment_processed`.
-- **notification-service**: envia mensagens baseadas nos eventos.
-- **frontend**: interface simples (HTML/JS) para interação com o sistema.
+## 📦 Estrutura do Projeto
 
-### 📬 Kafka - Tópicos
-
-- `order_created`: gerado pelo `order-service`
-- `payment_processed`: resposta do `payment-service`
-- `order_ready`: sinaliza que o pedido está pronto (gerado pelo `order-service`)
-
-### 🐳 Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    ports:
-      - '9092:9092'
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
-  order-db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: orderdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5433:5432'
-
-  payment-db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: paymentdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5434:5432'
-
-  notification-db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: notificationdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5435:5432'
-
-  menu-db:
-    image: postgres:13
-    environment:
-      POSTGRES_DB: menudb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5436:5432'
-
-  order-service:
-    build: ./services/order-service
-    depends_on:
-      - kafka
-      - order-db
-    environment:
-      DB_HOST: order-db
-      DB_PORT: 5432
-      DB_NAME: orderdb
-      DB_USER: user
-      DB_PASS: pass
-
-  payment-service:
-    build: ./services/payment-service
-    depends_on:
-      - kafka
-      - payment-db
-    environment:
-      DB_HOST: payment-db
-      DB_PORT: 5432
-      DB_NAME: paymentdb
-      DB_USER: user
-      DB_PASS: pass
-
-  notification-service:
-    build: ./services/notification-service
-    depends_on:
-      - kafka
-      - notification-db
-    environment:
-      DB_HOST: notification-db
-      DB_PORT: 5432
-      DB_NAME: notificationdb
-      DB_USER: user
-      DB_PASS: pass
-
-  menu-service:
-    build: ./services/menu-service
-    depends_on:
-      - menu-db
-    environment:
-      DB_HOST: menu-db
-      DB_PORT: 5432
-      DB_NAME: menudb
-      DB_USER: user
-      DB_PASS: pass
-
-  frontend:
-    image: nginx:alpine
-    volumes:
-      - ./frontend:/usr/share/nginx/html
-    ports:
-      - '8080:80'
+```
+.
+├── services
+│   ├── auth-service (🚧 EM DESENVOLVIMENTO)
+│   ├── menu-service (✅ COMPLETO)
+│   ├── order-service (✅ COMPLETO)
+│   ├── payment-service (✅ COMPLETO)
+│   └── notification-service (🚧 EM DESENVOLVIMENTO)
+├── frontend (✅ COMPLETO)
+├── shared
+│   ├── kafka
+│   │   ├── create_topics.py
+│   │   ├── consumer.py
+│   │   └── producer.py
+│   └── enums.py
+├── docker-compose.yml
+└── README.md
 ```
 
-### ▶️ Executando o Projeto
+---
 
+## 🔧 Serviços
+
+### 🔐 Auth Service (🚧 Em Desenvolvimento)
+
+- **Status:** Feature em desenvolvimento
+- **Função:** Cadastro, login e autenticação de usuários com JWT
+- **Stack:** FastAPI, SQLAlchemy, PostgreSQL, JWT (jose), Bcrypt
+- **Endpoints Planejados:**
+  - `POST /auth/register`
+  - `POST /auth/login`
+  - `POST /auth/refresh`
+- **Extras:** UUID para identificação do usuário
+- **Porta:** 5004
+
+### 📋 Menu Service (✅ Completo)
+
+- **Função:** Gerenciamento do cardápio de itens disponíveis para pedido
+- **Stack:** FastAPI, PostgreSQL, Kafka
+- **Endpoints:**
+  - `GET /api/v1/menu` - Lista itens do menu
+  - `POST /api/v1/menu` - Cria novo item
+  - `GET /api/v1/menu/{item_id}` - Obtém item específico
+  - `PUT /api/v1/menu/{item_id}` - Atualiza item
+  - `DELETE /api/v1/menu/{item_id}` - Remove item
+- **Eventos Kafka:**
+  - Publica: `menu_updated`
+- **Porta:** 5003
+- **Cobertura de Testes:** 98%+
+
+### 🛒 Order Service (✅ Completo)
+
+- **Função:** Criação e gerenciamento de pedidos
+- **Stack:** FastAPI, PostgreSQL, Kafka, Redis
+- **Endpoints:**
+  - `POST /api/v1/orders` - Cria novo pedido
+  - `GET /api/v1/orders` - Lista pedidos
+- **Eventos Kafka:**
+  - Publica: `order_created`, `order_updated`
+  - Consome: `menu_updated`, `payment_updated`
+- **Integrações:**
+  - Cache de cardápio via Redis
+  - Validação de itens com menu-service
+- **Porta:** 5001
+- **Cobertura de Testes:** 98%+
+
+### 💳 Payment Service (✅ Completo)
+
+- **Função:** Processamento e confirmação de pagamentos
+- **Stack:** FastAPI, PostgreSQL, Kafka
+- **Fluxo:**
+  - Pagamento `manual`: registra como `pending` e aguarda confirmação
+  - Pagamento `online`: processa automaticamente
+- **Endpoints:**
+  - `GET /api/v1/payments` - Lista pagamentos
+  - `PUT /api/v1/payments/confirm/{order_id}` - Confirma pagamento manual
+- **Eventos Kafka:**
+  - Publica: `payment_updated`
+  - Consome: `order_created`
+- **Porta:** Interno (não exposta)
+- **Cobertura de Testes:** 98%+
+
+### 🔔 Notification Service (🚧 Em Desenvolvimento)
+
+- **Status:** Feature em desenvolvimento
+- **Função:** Enviar notificações quando eventos são recebidos
+- **Stack:** FastAPI, PostgreSQL, Kafka
+- **Eventos Consumidos:** `order_created`, `payment_updated`, `order_updated`
+- **Futuro:** Integração com e-mail, push notification ou WhatsApp API
+
+---
+
+## 🖥️ Frontend
+
+- **Stack:** React + TypeScript + Vite + Tailwind CSS + ShadCN UI
+- **Funcionalidades:**
+  - ✅ Visualização do cardápio
+  - ✅ Criação de pedidos com múltiplos itens
+  - ✅ Seleção de tipo de pagamento (manual/online)
+  - ✅ Validação visual com animações
+  - ✅ Design responsivo
+- **Build:** Nginx + Docker multi-stage
+- **Porta:** 3000 (mapeada para 80 no container)
+
+---
+
+## 📬 Kafka - Arquitetura de Eventos
+
+### Configuração
+- **Modo:** KRaft (sem Zookeeper)
+- **Brokers:** 3 instâncias para alta disponibilidade
+- **Portas:** 9092, 9094, 9095
+
+### Tópicos Principais
+- `order_created`: Novo pedido criado (order-service → payment-service)
+- `payment_updated`: Status de pagamento atualizado (payment-service → order-service)
+- `menu_updated`: Cardápio atualizado (menu-service → order-service)
+- `order_updated`: Status do pedido atualizado (order-service → notification-service)
+
+---
+
+## ⚙️ Executando o Projeto
+
+### Pré-requisitos
+- Docker 20.10+
+- Docker Compose 2.0+
+- 8GB RAM disponível (recomendado)
+
+### Comando Principal
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-### 📂 Exemplos de Código (order-service/app.py)
+### Serviços Disponíveis
+- **Frontend:** http://localhost:3000
+- **Menu API:** http://localhost:5003/docs
+- **Order API:** http://localhost:5001/docs
+- **Auth API:** http://localhost:5004/docs (quando disponível)
 
-```python
-from flask import Flask, request, jsonify
-from kafka import KafkaProducer
-import json
-import psycopg2
+### Comandos Úteis
+```bash
+# Apenas serviços essenciais
+docker compose up --build frontend menu-service order-service payment-service
 
-app = Flask(__name__)
-producer = KafkaProducer(
-    bootstrap_servers='kafka:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-)
+# Logs de um serviço específico
+docker compose logs -f order-service
 
-db = psycopg2.connect(
-    dbname='orderdb',
-    user='user',
-    password='pass',
-    host='order-db',
-    port='5432'
-)
+# Executar testes
+docker exec -it top-restaurant_payment-service_1 pytest --cov=.
 
-@app.route('/order', methods=['POST'])
-def create_order():
-    order = request.json
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO orders (data) VALUES (%s)", (json.dumps(order),))
-    db.commit()
-    producer.send('order_created', order)
-    return jsonify({'message': 'Order created'}), 201
+# Parar tudo
+docker compose down --volumes
 ```
 
-<!-- ## Tópicos Kafka
-- `order_created`: produzido pelo order-service, consumido pelo payment-service
-- `payment_processed`: produzido pelo payment-service, consumido pelo notification-service
+---
 
-Configurar execução automática dos consumidores via entrypoint.sh
+## 🧪 Testes e Qualidade
 
-Adicionar logs de rastreio para eventos Kafka
+### Cobertura Atual
+- **Payment Service:** 98%+
+- **Menu Service:** 98%+
+- **Order Service:** 98%+
 
-Implementar testes de integração para os serviços Kafka -->
+### Executando Testes
+```bash
+# Payment Service
+docker exec -it top-restaurant_payment-service_1 pytest --cov=. --cov-report=html
 
-<!-- Implementar a API REST para CRUD no menu-service
+# Menu Service
+docker exec -it top-restaurant_menu-service_1 pytest --cov=. --cov-report=html
 
-Criar testes de integração entre order-service e menu-service
+# Order Service
+docker exec -it top-restaurant_order-service_1 pytest --cov=. --cov-report=html
+```
 
-Simular chamadas do order-service para buscar dados do menu -->
+---
 
-<!-- COMANDOS
+## 🚧 Roadmap
 
-Listar tópicos
-kafka-topics --bootstrap-server kafka:9092 --list -->
+### Próximas Funcionalidades
+- [ ] **Auth Service:** Sistema completo de autenticação
+- [ ] **Notification Service:** Notificações por e-mail/WhatsApp
+- [ ] **Frontend:** Integração com auth-service
+- [ ] **Dashboard:** Painel administrativo para pedidos
+- [ ] **Gateway:** API Gateway com rate limiting
+- [ ] **Monitoring:** Prometheus + Grafana
+- [ ] **CI/CD:** Pipeline automatizado
 
+### Melhorias Técnicas
+- [ ] Refresh tokens no auth-service
+- [ ] Integração com gateway de pagamento real
+- [ ] Logs estruturados (JSON)
+- [ ] Health checks mais robustos
+- [ ] Backup automatizado dos bancos
 
+---
 
-<!-- Exemplos de JSONs para teste dos Endpoints
+## 🔧 Configuração de Desenvolvimento
 
+### Variáveis de Ambiente Importantes
+```env
+# Kafka
+KAFKA_BROKERS=kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095
 
-📦 POST /orders (Criar pedido)
+# Databases
+DB_HOST=<service>-db
+DB_PORT=5432
+DB_USER=user
+DB_PASS=pass
 
-{
-  "customer_name": "João Silva",
-  "item_name": "Pizza Calabresa",
-  "quantity": 2,
-  "total_price": 50.00
-}
-✅ Esperado: 201 Created
+# Auth (quando disponível)
+JWT_SECRET=super-secret-key
+```
 
-❌ Erro (campo ausente):
+### Portas dos Bancos
+- Auth DB: 5437
+- Order DB: 5433
+- Payment DB: 5434
+- Notification DB: 5435
+- Menu DB: 5436
+- Redis: 6379
 
-{
-  "item_name": "Pizza Calabresa",
-  "quantity": 2,
-  "total_price": 50.00
-}
-🔁 Retorno esperado: 400 Bad Request, informando customer_name ausente
+---
 
-💳 POST /payments (Registrar pagamento manual direto)
+## 📝 Observações Técnicas
 
-{
-  "order_id": 1,
-  "amount": 50.00,
-  "payment_type": "manual",
-  "status": "paid"
-}
-✅ Esperado: 201 Created
-
-❌ Erro 1: payment_type inválido
-
-{
-  "order_id": 1,
-  "amount": 50.00,
-  "payment_type": "online",
-  "status": "paid"
-}
-🔁 Retorno esperado: 400 Bad Request com mensagem sobre tipo de pagamento
-
-❌ Erro 2: status incorreto
-
-{
-  "order_id": 1,
-  "amount": 50.00,
-  "payment_type": "manual",
-  "status": "pending"
-}
-🔁 Retorno esperado: 400 Bad Request com mensagem sobre o status exigido ser "paid"
-
-
-🧾 POST /confirm-payment/{order_id} (Confirmar pagamento manual pendente)
-POST /confirm-payment/2
-✅ Esperado: 200 OK com mensagem de confirmação
-
-❌ Erro: order_id não encontrado → 404 Not Found
-
-❌ Erro: status já é "paid" → 400 Bad Request
-
-❌ Erro: payment_type não é "manual" → 400 Bad Request
-
-
-📋 GET /orders (Listar pedidos)
-✅ Resposta esperada:
-
-[
-  {
-    "id": 1,
-    "customer_name": "João Silva",
-    "item_name": "Pizza Calabresa",
-    "quantity": 2,
-    "total_price": 50.0,
-    "status": "pending"
-  }
-]
-
-
-💰 GET /payments (Listar pagamentos)
-✅ Resposta esperada:
-
-[
-  {
-    "id": 1,
-    "order_id": 1,
-    "amount": 50.0,
-    "status": "paid",
-    "payment_type": "manual",
-    "created_at": "2025-06-09T12:34:56.789Z"
-  }
-] -->
+- **Desenvolvimento:** `UVICORN_RELOAD=true` no payment-service (remover em produção)
+- **Rede:** Todos os serviços na mesma rede Docker para comunicação interna
+- **Volumes:** Dados persistidos em volumes nomeados
+- **Logs:** Centralizados via Docker Compose logs
+- **Saúde:** Health checks configurados para dependências críticas
