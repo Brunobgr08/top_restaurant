@@ -40,9 +40,9 @@ def create_or_get_payment(db: Session, order_data: dict) -> Payment:
 
         # Cria novo pagamento
         payment_type_id = get_payment_type_id(db, order_data.get('payment_type', 'manual'))
-        
+
         payment = Payment(
-            payment_id=uuid.uuid4(),
+            payment_id=str(uuid.uuid4()),
             order_id=order_data['order_id'],
             amount=order_data['total_price'],
             payment_type_id=payment_type_id,

@@ -18,4 +18,4 @@ COPY services/payment-service/ .
 # Configura o PYTHONPATH para incluir a pasta shared
 ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5002"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5002"]

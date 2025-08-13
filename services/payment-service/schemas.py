@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, field_validator, validator
-from datetime import datetime
 from uuid import UUID
+from pydantic import BaseModel, Field, field_validator, validator, ConfigDict
+from datetime import datetime
 from shared.enums import PaymentStatus, PaymentType
 
 class PaymentBase(BaseModel):
@@ -16,7 +16,8 @@ class PaymentBase(BaseModel):
         description="Status de pagamento do pedido"
     )
 
-    @validator('amount')
+    @field_validator('amount')
+    @classmethod
     def round_amount(cls, v):
         return round(v, 2)
 
@@ -24,18 +25,21 @@ class PaymentCreate(PaymentBase):
     pass
 
 class PaymentResponse(BaseModel):
-    payment_id: UUID
-    order_id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+    payment_id: str
+    order_id: str
     amount: float
-    payment_type: PaymentType
-    status: PaymentStatus
+    payment_type: str
+    status: str
     created_at: datetime
 
     @field_validator('payment_type', mode='before')
     @classmethod
     def extract_payment_type(cls, v):
-        # Converte objeto ORM para string
         return getattr(v, 'name', v)
 
-    class Config:
-        from_attributes = True
+class PaymentConfirmResponse(BaseModel):
+    message: str
+    payment_id: str
+    status: str

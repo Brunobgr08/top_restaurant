@@ -1,9 +1,9 @@
+import logging
+import threading
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import logging
-import threading
-from routes import router
+from routes import router as payment_router
 from kafka_consumer import start_consumer
 
 # Configuração do logger
@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Payment Service API",
     lifespan=lifespan,
-    description="API para processamento de pagamentos com Kafka",
+    description="API para processamento de pagamentos",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -50,7 +50,7 @@ app.add_middleware(
 
 # Inclui todas as rotas
 app.include_router(
-    router,
+    payment_router,
     prefix="/api/v1",  # Prefixo para versionamento da API
     tags=["Payment Processing"]
 )
