@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  api:
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+  # Serviços Backend - Configuração de Produção
+  order-service:
+    container_name: top-restaurant_order-service_prod
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile.prod
+    depends_on:
+      order-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DB_HOST: order-db
+      DB_PORT: 5432
+      DB_NAME: ${ORDER_DB_NAME}
+      DB_USER: ${ORDER_DB_USER}
+      DB_PASSWORD: ${ORDER_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      KAFKA_BROKERS: kafka-controller:9092
+      WORKERS: ${WORKERS:-4}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    expose:
+      - '5001'
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    networks:
+      - backend
+
+  payment-service:
+    container_name: top-restaurant_payment-service_prod
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile.prod
+    depends_on:
+      payment-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: payment-db
+      DB_PORT: 5432
+      DB_NAME: ${PAYMENT_DB_NAME}
+      DB_USER: ${PAYMENT_DB_USER}
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      KAFKA_BROKERS: kafka-controller:9092
+      WORKERS: ${WORKERS:-4}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    expose:
+      - '5002'
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    networks:
+      - backend
+
+  menu-service:
+    container_name: top-restaurant_menu-service_prod
+    build:
+      context: .
+      dockerfile: services/menu-service/Dockerfile.prod
+    depends_on:
+      menu-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: menu-db
+      DB_PORT: 5432
+      DB_NAME: ${MENU_DB_NAME}
+      DB_USER: ${MENU_DB_USER}
+      DB_PASSWORD: ${MENU_DB_PASSWORD}
+      KAFKA_BROKERS: kafka-controller:9092
+      WORKERS: ${WORKERS:-4}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    expose:
+      - '5003'
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+    networks:
+      - backend
+
+  # Frontend - Configuração de Produção
+  frontend:
+    container_name: top-restaurant_frontend_prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    environment:
+      - VITE_API_URL=${API_URL:-http://localhost}
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+
+  # Nginx - Proxy Reverso e SSL
+  nginx:
+    image: nginx:alpine
+    container_name: top-restaurant_nginx_prod
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - order-service
+      - payment-service
+      - menu-service
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
+
+volumes:
+  kafka_data_1:
+  kafka_data_2:
+  kafka_data_3:
+  order_data:
+  order_data_prod:
+  payment_data:
+  payment_data_prod:
+  menu_data:
+  menu_data_prod:
+  redis_data:
+  redis_data_prod:
