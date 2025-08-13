@@ -9,7 +9,7 @@ logger = logging.getLogger("kafka-producer")
 logger.setLevel(logging.INFO)
 
 class KafkaProducerWrapper:
-    def __init__(self, bootstrap_servers: str = 'kafka:9092', max_retries: int = 5, retry_delay: int = 5):
+    def __init__(self, bootstrap_servers: str = 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095', max_retries: int = 5, retry_delay: int = 5):
         self._conf = {
             'bootstrap.servers': bootstrap_servers,
             'message.timeout.ms': 10000,

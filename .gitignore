@@ -59,6 +59,7 @@ dist/
 # Testes
 test-reports/
 *.coverage
+htmlcov/
 
 # EditorConfig
 .editorconfig

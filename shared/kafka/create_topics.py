@@ -1,12 +1,17 @@
 from kafka.admin import KafkaAdminClient, NewTopic
 from kafka.errors import TopicAlreadyExistsError
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("kafka-init")
 
+BROKERS = ['kafka-controller:9092', 'kafka-broker-2:9094', 'kafka-broker-3:9095']
+
+time.sleep(5)
+
 admin_client = KafkaAdminClient(
-    bootstrap_servers="kafka:9092",
+    bootstrap_servers=BROKERS,
     client_id='admin-client'
 )
 
@@ -26,7 +31,11 @@ topics_to_create = []
 for topic_name, configs in topic_definitions.items():
     if topic_name not in existing_topics:
         topics_to_create.append(
-            NewTopic(name=topic_name, num_partitions=1, replication_factor=1, topic_configs=configs)
+            NewTopic(name=topic_name,
+                     num_partitions=1,
+                     replication_factor=3,
+                     topic_configs=configs
+            )
         )
 
 if topics_to_create:

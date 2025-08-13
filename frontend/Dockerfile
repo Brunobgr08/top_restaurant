@@ -1,6 +1,8 @@
 # Estágio de construção
 FROM node:18-alpine AS builder
 WORKDIR /app
+# Suprime notificações do npm
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 COPY package*.json ./
 RUN npm install
 COPY . .

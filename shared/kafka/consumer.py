@@ -8,7 +8,7 @@ logger = logging.getLogger("kafka-consumer")
 logger.setLevel(logging.INFO)
 
 class KafkaConsumerWrapper:
-    def __init__(self, bootstrap_servers: str = 'kafka:9092', group_id: str = None):
+    def __init__(self, bootstrap_servers: str = 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095', group_id: str = None):
         self._conf = {
             'bootstrap.servers': bootstrap_servers,
             'group.id': group_id,
