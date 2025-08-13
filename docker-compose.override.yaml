@@ -1,0 +1,10 @@
+services:
+  kafka-init:
+    build:
+      context: ./shared/kafka
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka-controller
+      - kafka-broker-2
+      - kafka-broker-3
+    restart: on-failure
