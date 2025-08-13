@@ -120,11 +120,13 @@ Há um frontend simples para interação com o sistema, construído com React, T
 ## 📬 Kafka - Arquitetura de Eventos
 
 ### Configuração
+
 - **Modo:** KRaft (sem Zookeeper)
 - **Brokers:** 3 instâncias para alta disponibilidade
 - **Portas:** 9092, 9094, 9095
 
 ### Tópicos Principais
+
 - `order_created`: Novo pedido criado (order-service → payment-service)
 - `payment_updated`: Status de pagamento atualizado (payment-service → order-service)
 - `menu_updated`: Cardápio atualizado (menu-service → order-service)
@@ -138,52 +140,165 @@ Há um frontend simples para interação com o sistema, construído com React, T
 - Docker 20.10+
 - Docker Compose 2.0+
 - 8GB RAM disponível (recomendado)
+- Make (geralmente pré-instalado no Linux/macOS)
 
-### Comando Principal
+### Comandos MakeFile - Execução Rápida
+
+#### **Comandos Essenciais**
 ```bash
-docker compose up --build
+# Setup inicial completo (instala dependências, sobe serviços, cria tópicos)
+make setup
+
+# Subir todos os serviços
+make up
+
+# Subir apenas serviços essenciais (sem auth/notification)
+make up-core
+
+# Parar todos os serviços
+make down
+
+# Reiniciar todos os serviços
+make restart
 ```
 
-### Serviços Disponíveis
-- **Frontend:** http://localhost:3000
-- **Menu API:** http://localhost:5003/docs
-- **Order API:** http://localhost:5001/docs
-- **Auth API:** http://localhost:5004/docs (quando disponível)
-
-### Comandos Úteis
+#### **Verificação e Monitoramento**
 ```bash
+# Verificar saúde de todos os serviços
+make health
+
+# Status dos containers
+make ps
+
+# Logs de todos os serviços
+make logs
+
+# Logs de um serviço específico
+make logs-order-service
+make logs-payment-service
+make logs-menu-service
+```
+
+#### **Serviços Individuais**
+```bash
+# Subir um serviço específico
+make up-order-service
+make up-payment-service
+make up-menu-service
+
+# Parar um serviço específico
+make stop-order-service
+
+# Acessar shell de um container
+make bash-order-service
+make bash-payment-service
+make bash-menu-service
+
+# Reinstalar requirements em um serviço
+make pip-install-order-service
+```
+
+#### **Frontend**
+```bash
+# Instalar dependências do frontend
+make install-frontend
+
+# Executar testes do frontend
+make test-frontend
+
+# Iniciar servidor de desenvolvimento do frontend
+make dev-frontend
+
+# Buildar frontend para produção
+make build-frontend
+```
+
+#### **Banco de Dados**
+```bash
+# Conectar ao banco de dados de um serviço
+make db-order-service
+make db-payment-service
+make db-menu-service
+
+# Fazer backup do banco de dados
+make backup-order-service
+make backup-payment-service
+make backup-menu-service
+```
+
+#### **Kafka**
+```bash
+# Criar tópicos do Kafka
+make kafka-topics
+
+# Listar tópicos do Kafka
+make kafka-list
+```
+
+#### **Limpeza e Reset**
+```bash
+# Limpeza completa (remove containers, volumes, imagens)
+make clean
+
+# Reset completo (limpa tudo e reconstrói)
+make reset
+
+# Limpar apenas volumes
+make clean-volumes
+
+# Limpar arquivos de cobertura
+make coverage-clean
+```
+
+### Comandos Docker Tradicionais (Alternativa)
+```bash
+# Comando principal
+docker compose up --build
+
 # Apenas serviços essenciais
-docker compose up --build frontend menu-service order-service payment-service
+docker compose up -d --build frontend menu-service order-service payment-service
 
 # Logs de um serviço específico
 docker compose logs -f order-service
 
-# Executar testes
+# Executar testes manualmente
 docker exec -it top-restaurant_payment-service_1 pytest --cov=.
 
 # Parar tudo
 docker compose down --volumes
 ```
 
----
+### Serviços Disponíveis
+
+- **Frontend:** http://localhost:3000
+- **Menu API:** http://localhost:5003/docs
+- **Order API:** http://localhost:5001/docs
+
 
 ## 🧪 Testes e Qualidade
 
 ### Cobertura Atual
+
 - **Payment Service:** 98%+
 - **Menu Service:** 98%+
 - **Order Service:** 98%+
 
 ### Executando Testes
+
 ```bash
-# Payment Service
-docker exec -it top-restaurant_payment-service_1 pytest --cov=. --cov-report=html
+# Executar testes de um serviço específico com cobertura
+make test-order-service
+make test-payment-service
+make test-menu-service
 
-# Menu Service
-docker exec -it top-restaurant_menu-service_1 pytest --cov=. --cov-report=html
+# Executar testes de todos os serviços
+make test-all
 
-# Order Service
-docker exec -it top-restaurant_order-service_1 pytest --cov=. --cov-report=html
+# Executar testes rápidos (sem cobertura)
+make test-quick-order-service
+
+# Abrir relatório de cobertura HTML
+make open-coverage-order-service
 ```
 
 ---
@@ -191,6 +306,7 @@ docker exec -it top-restaurant_order-service_1 pytest --cov=. --cov-report=html
 ## 🚧 Roadmap
 
 ### Próximas Funcionalidades
+
 - [ ] **Auth Service:** Sistema completo de autenticação
 - [ ] **Notification Service:** Notificações por e-mail/WhatsApp
 - [ ] **Frontend:** Integração com auth-service
@@ -200,6 +316,7 @@ docker exec -it top-restaurant_order-service_1 pytest --cov=. --cov-report=html
 - [ ] **CI/CD:** Pipeline automatizado
 
 ### Melhorias Técnicas
+
 - [ ] Refresh tokens no auth-service
 - [ ] Integração com gateway de pagamento real
 - [ ] Logs estruturados (JSON)
@@ -211,6 +328,7 @@ docker exec -it top-restaurant_order-service_1 pytest --cov=. --cov-report=html
 ## 🔧 Configuração de Desenvolvimento
 
 ### Variáveis de Ambiente Importantes
+
 ```env
 # Kafka
 KAFKA_BROKERS=kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095
@@ -226,6 +344,7 @@ JWT_SECRET=super-secret-key
 ```
 
 ### Portas dos Bancos
+
 - Auth DB: 5437
 - Order DB: 5433
 - Payment DB: 5434
