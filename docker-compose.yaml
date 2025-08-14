@@ -1,245 +1,87 @@
+version: '3.8'
+
 services:
-  kafka-controller:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka-controller
-    container_name: top-restaurant_kafka-controller
-    ports:
-      - '9092:9092'
-      - '9093:9093'
-    environment:
-      KAFKA_KRAFT_MODE: 'true'
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_NODE_ID: 1
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-controller:9093,2@kafka-broker-2:9093,3@kafka-broker-3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-controller:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      CLUSTER_ID: 'KCv6iw23TwykPg8ZQaZnLQ'
-    healthcheck:
-      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'kafka-controller:9092']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-    volumes:
-      - kafka_data_1:/var/lib/kafka
-    restart: unless-stopped
-
-  kafka-broker-2:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka-broker-2
-    container_name: top-restaurant_kafka-broker-2
-    ports:
-      - '9094:9094'
-      - '29093:9093'
-    environment:
-      KAFKA_KRAFT_MODE: 'true'
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_NODE_ID: 2
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-controller:9093,2@kafka-broker-2:9093,3@kafka-broker-3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://:9094,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-broker-2:9094'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      CLUSTER_ID: 'KCv6iw23TwykPg8ZQaZnLQ'
-    healthcheck:
-      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'kafka-broker-2:9094']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-    volumes:
-      - kafka_data_2:/var/lib/kafka
-    restart: unless-stopped
-
-  kafka-broker-3:
-    image: confluentinc/cp-kafka:7.5.0
-    hostname: kafka-broker-3
-    container_name: top-restaurant_kafka-broker-3
-    ports:
-      - '9095:9095'
-      - '39093:9093'
-    environment:
-      KAFKA_KRAFT_MODE: 'true'
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_NODE_ID: 3
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-controller:9093,2@kafka-broker-2:9093,3@kafka-broker-3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://:9095,CONTROLLER://:9093'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-broker-3:9095'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
-      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
-      CLUSTER_ID: 'KCv6iw23TwykPg8ZQaZnLQ'
-    healthcheck:
-      test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'kafka-broker-3:9095']
-      interval: 5s
-      timeout: 10s
-      retries: 10
-    volumes:
-      - kafka_data_3:/var/lib/kafka
-    restart: unless-stopped
-
-  order-db:
-    image: postgres:13
-    container_name: top-restaurant_order-db
-    environment:
-      POSTGRES_DB: orderdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5433:5432'
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U user -d orderdb']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-    volumes:
-      - order_data:/var/lib/postgresql/data
-      - ./services/order-service/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  payment-db:
-    image: postgres:13
-    container_name: top-restaurant_payment-db
-    environment:
-      POSTGRES_DB: paymentdb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5434:5432'
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U user -d paymentdb']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-    volumes:
-      - payment_data:/var/lib/postgresql/data
-      - ./services/payment-service/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  menu-db:
-    image: postgres:13
-    container_name: top-restaurant_menu-db
-    environment:
-      POSTGRES_DB: menudb
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-    ports:
-      - '5436:5432'
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U user -d menudb']
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    restart: unless-stopped
-    volumes:
-      - menu_data:/var/lib/postgresql/data
-      - ./services/menu-service/init.sql:/docker-entrypoint-initdb.d/init.sql
-
+  # --- Microsserviços Backend ---
   order-service:
-    container_name: top-restaurant_order-service
+    container_name: top-restaurant_order-service_prod
     build:
       context: .
-      dockerfile: services/order-service/Dockerfile
-    depends_on:
-      order-db:
-        condition: service_healthy
-      kafka-controller:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      dockerfile: services/order-service/Dockerfile.prod
     environment:
-      DB_HOST: order-db
-      DB_PORT: 5432
-      DB_NAME: orderdb
-      DB_USER: user
-      DB_PASS: pass
-      KAFKA_BROKERS: 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095'
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DB_HOST: ${ORDER_DB_HOST}
+      DB_PORT: ${ORDER_DB_PORT}
+      DB_NAME: ${ORDER_DB_NAME}
+      DB_USER: ${ORDER_DB_USER}
+      DB_PASSWORD: ${ORDER_DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      WORKERS: ${WORKERS:-2}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
-      - '5001:5001' # Expondo a porta do order-service para o frontend
-    volumes:
-      - ./shared:/app/shared:ro
-      - ./services/order-service:/app
+      - '5001:8000'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512MB
+    restart: unless-stopped
 
   payment-service:
-    container_name: top-restaurant_payment-service
+    container_name: top-restaurant_payment-service_prod
     build:
       context: .
-      dockerfile: services/payment-service/Dockerfile
-    depends_on:
-      kafka-controller:
-        condition: service_healthy
-      payment-db:
-        condition: service_healthy
+      dockerfile: services/payment-service/Dockerfile.prod
     environment:
-      DB_HOST: payment-db
-      DB_PORT: 5432
-      DB_NAME: paymentdb
-      DB_USER: user
-      DB_PASS: pass
-      KAFKA_BROKERS: 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095'
-      UVICORN_RELOAD: 'true'
-    # ports:
-    #   - '5002:5002' # Expondo a porta do payment-service
-    volumes:
-      - ./shared:/app/shared:ro
-      - ./services/payment-service:/app
-
-  menu-service:
-    container_name: top-restaurant_menu-service
-    build:
-      context: .
-      dockerfile: services/menu-service/Dockerfile
-    depends_on:
-      menu-db:
-        condition: service_healthy
-      kafka-controller:
-        condition: service_healthy
-    environment:
-      DB_HOST: menu-db
-      DB_PORT: 5432
-      DB_NAME: menudb
-      DB_USER: user
-      DB_PASS: pass
-      KAFKA_BROKERS: 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095'
+      DB_HOST: ${PAYMENT_DB_HOST}
+      DB_PORT: ${PAYMENT_DB_PORT}
+      DB_NAME: ${PAYMENT_DB_NAME}
+      DB_USER: ${PAYMENT_DB_USER}
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
     ports:
-      - '5003:5003'
-    volumes:
-      - ./shared:/app/shared:ro
-
-  redis:
-    image: redis:7
-    container_name: top-restaurant_redis
-    hostname: redis
-    ports:
-      - '6379:6379'
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 5
+      - '5002:8000'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512MB
     restart: unless-stopped
 
-  frontend:
-    container_name: top-restaurant_frontend
-    build: ./frontend
-    ports:
-      - '3000:80'
-    depends_on:
-      - order-service # Depende do order-service que fornece a API
-      - menu-service # Depende do menu-service que fornece a API
+  menu-service:
+    container_name: top-restaurant_menu-service_prod
+    build:
+      context: .
+      dockerfile: services/menu-service/Dockerfile.prod
     environment:
-      - NODE_ENV=production
-    networks:
-      - default
+      DB_HOST: ${MENU_DB_HOST}
+      DB_PORT: ${MENU_DB_PORT}
+      DB_NAME: ${MENU_DB_NAME}
+      DB_USER: ${MENU_DB_USER}
+      DB_PASSWORD: ${MENU_DB_PASSWORD}
+    ports:
+      - '5003:8000'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512MB
+    restart: unless-stopped
 
-volumes:
-  kafka_data_1:
-  kafka_data_2:
-  kafka_data_3:
-  order_data:
-  payment_data:
-  menu_data:
+  # --- Frontend ---
+  frontend:
+    container_name: top-restaurant_frontend_prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    environment:
+      VITE_API_URL: ${API_URL}
+    ports:
+      - '3000:3000'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512MB
+    restart: unless-stopped
