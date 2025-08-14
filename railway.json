@@ -1,6 +1,6 @@
 {
   "build": {
     "builder": "docker",
-    "composeFile": "docker-compose.production.yaml"
+    "composeFile": "docker-compose.yaml"
   }
 }
