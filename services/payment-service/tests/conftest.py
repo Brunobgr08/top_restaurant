@@ -1,12 +1,14 @@
-
+import os
 import pytest
 from fastapi.testclient import TestClient
-from main import app as fastapi_app
-from database import Base, get_db
+from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from database import Base, get_db
+from main import app as fastapi_app
 
-# Banco de dados SQLite em memória para testes
+os.environ['TESTING'] = 'true'
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_payment.db"
 
 engine = create_engine(
@@ -23,6 +25,32 @@ def override_get_db():
 
 fastapi_app.dependency_overrides[get_db] = override_get_db
 
+@pytest.fixture(autouse=True)
+def mock_kafka_dependencies():
+    with patch('kafka_producer.publish_payment_processed_event') as mock_publish_payment, \
+         patch('kafka_producer.get_kafka_producer') as mock_get_producer, \
+         patch('kafka_consumer.KafkaConsumerWrapper') as mock_consumer_wrapper, \
+         patch('shared.kafka.producer.get_kafka_producer') as mock_shared_producer, \
+         patch('shared.kafka.consumer.KafkaConsumerWrapper') as mock_shared_consumer:
+
+        mock_publish_payment.return_value = None
+
+        mock_producer = MagicMock()
+        mock_producer.publish_message.return_value = True
+        mock_get_producer.return_value = mock_producer
+        mock_shared_producer.return_value = mock_producer
+
+        mock_consumer = MagicMock()
+        mock_consumer.subscribe_and_consume = MagicMock()
+        mock_consumer_wrapper.return_value = mock_consumer
+        mock_shared_consumer.return_value = mock_consumer
+
+        yield {
+            'publish_payment': mock_publish_payment,
+            'producer': mock_producer,
+            'consumer': mock_consumer
+        }
+
 @pytest.fixture(scope="module")
 def client():
     Base.metadata.create_all(bind=engine)
@@ -30,4 +58,41 @@ def client():
         yield c
     Base.metadata.drop_all(bind=engine)
 
+@pytest.fixture(scope="function")
+def db_session():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.rollback()
+        db.close()
 
+@pytest.fixture
+def mock_kafka_producer():
+    with patch('kafka_producer.get_kafka_producer') as mock_get:
+        mock_producer = MagicMock()
+        mock_producer.publish_message.return_value = True
+        mock_get.return_value = mock_producer
+        yield mock_producer
+
+@pytest.fixture
+def mock_kafka_consumer():
+    with patch('kafka_consumer.KafkaConsumerWrapper') as mock_wrapper:
+        mock_consumer = MagicMock()
+        mock_consumer.subscribe_and_consume = MagicMock()
+        mock_wrapper.return_value = mock_consumer
+        yield mock_consumer
+
+@pytest.fixture
+def published_messages():
+    messages = []
+
+    def capture_message(topic, message, key=None):
+        messages.append({
+            'topic': topic,
+            'message': message,
+            'key': key
+        })
+        return True
+
+    return messages, capture_message

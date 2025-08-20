@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Order Service API",
-    description="API para gerenciamento de pedidos",
+    description="API para gerenciamento de pedidos e pagamentos",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",

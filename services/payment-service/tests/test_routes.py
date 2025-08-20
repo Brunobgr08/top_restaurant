@@ -1,10 +1,14 @@
 
+import os
 import pytest
+from dotenv import load_dotenv
 from fastapi import status
 from unittest.mock import patch, MagicMock
 from shared.enums import PaymentStatus, PaymentType
 
-API_PREFIX = "/api/v1"
+load_dotenv()
+
+API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
 
 def test_list_payments_empty(client):
     response = client.get(f"{API_PREFIX}/payments/")

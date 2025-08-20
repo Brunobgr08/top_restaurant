@@ -257,6 +257,7 @@ health:
 	@curl -s http://localhost:3000 > /dev/null && echo "$(GREEN)✅ Frontend OK$(NC)" || echo "$(RED)❌ Frontend DOWN$(NC)"
 	@curl -s http://localhost:5001/docs > /dev/null && echo "$(GREEN)✅ Order Service OK$(NC)" || echo "$(RED)❌ Order Service DOWN$(NC)"
 	@curl -s http://localhost:5003/docs > /dev/null && echo "$(GREEN)✅ Menu Service OK$(NC)" || echo "$(RED)❌ Menu Service DOWN$(NC)"
+	@curl -s http://localhost:5001/api/v1/payments > /dev/null && echo "$(GREEN)✅ Payment Service OK$(NC)" || echo "$(RED)❌ Payment Service DOWN$(NC)"
 
 ## Mostra ajuda
 help:

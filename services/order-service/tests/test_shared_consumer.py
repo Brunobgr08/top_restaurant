@@ -11,15 +11,12 @@ def mock_kafka_consumer():
         yield mock_instance
 
 def test_initialization():
-    """Testa a inicialização do consumer"""
     with patch('shared.kafka.consumer.Consumer') as mock_consumer:
         bootstrap_servers = "kafka1:9092,kafka2:9093"
         group_id = "test-group"
 
-        # Cria o consumer
         consumer = KafkaConsumerWrapper(bootstrap_servers, group_id)
 
-        # Verifica se o Consumer foi criado com a configuração correta
         mock_consumer.assert_called_once_with({
             'bootstrap.servers': bootstrap_servers,
             'group.id': group_id,
@@ -29,7 +26,6 @@ def test_initialization():
             'heartbeat.interval.ms': 3000
         })
 
-        # Verifica se a configuração foi armazenada corretamente
         assert consumer._conf['bootstrap.servers'] == bootstrap_servers
         assert consumer._conf['group.id'] == group_id
 
@@ -93,8 +89,6 @@ def test_subscribe_and_consume_multiple(mock_kafka_consumer):
     mock_kafka_consumer.close.assert_called_once()
 
 def test_error_handling(mock_kafka_consumer):
-    """Testa o tratamento de erros"""
-    # Simula um erro no poll
     mock_kafka_consumer.poll.side_effect = Exception("Test error")
 
     consumer = KafkaConsumerWrapper()
@@ -103,8 +97,7 @@ def test_error_handling(mock_kafka_consumer):
         consumer.subscribe_and_consume(["test-topic"], MagicMock())
 
 def test_json_decode_error(mock_kafka_consumer, caplog):
-    """Testa o tratamento de erro de JSON inválido"""
-    # Mensagem com JSON inválido
+
     mock_msg = MagicMock()
     mock_msg.error.return_value = None
     mock_msg.value.return_value = b'invalid-json'
@@ -113,5 +106,4 @@ def test_json_decode_error(mock_kafka_consumer, caplog):
     consumer = KafkaConsumerWrapper()
     consumer.subscribe_and_consume(["test-topic"], MagicMock())
 
-    # Verifica se o erro foi logado
     assert "Erro ao decodificar mensagem" in caplog.text

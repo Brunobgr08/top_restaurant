@@ -1,11 +1,15 @@
+import os
 import pytest
+from dotenv import load_dotenv
 from fastapi import status
 from pydantic import ValidationError
 from unittest.mock import patch
 
 from schemas import OrderCreate
 
-API_PREFIX = "/api/v1"
+load_dotenv()
+
+API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
 
 @pytest.fixture
 def mock_order_data():

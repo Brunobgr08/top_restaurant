@@ -1,7 +1,11 @@
+import os
 import pytest
 from fastapi import status
+from dotenv import load_dotenv
 
-API_PREFIX = "/api/v1"
+load_dotenv()
+
+API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
 
 created_item_id = None
 

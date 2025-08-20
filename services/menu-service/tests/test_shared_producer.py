@@ -12,12 +12,12 @@ def test_initialize_retries_and_fails(mock_admin_client, mock_producer):
     mock_admin_client.side_effect = KafkaException("Erro na conexão")
 
     with pytest.raises(KafkaException, match="Erro na conexão"):
-        KafkaProducerWrapper(max_retries=2, retry_delay=0)  # Reduz delay p/ teste rápido
+        KafkaProducerWrapper(max_retries=2, retry_delay=0)
 
 
 def test_publish_message_without_initialization():
-    producer = KafkaProducerWrapper.__new__(KafkaProducerWrapper)  # Bypass __init__
-    producer._producer = None  # Força _producer como None
+    producer = KafkaProducerWrapper.__new__(KafkaProducerWrapper)
+    producer._producer = None
     with pytest.raises(KafkaException, match="Producer não inicializado"):
         producer.publish_message("some_topic", {"data": "value"})
 
@@ -52,4 +52,4 @@ def test_delivery_report_logs_success(caplog):
 
     with caplog.at_level(logging.DEBUG):
         KafkaProducerWrapper._delivery_report(None, mock_msg)
-        
+

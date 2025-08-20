@@ -1,0 +1,39 @@
+[run]
+source = .
+branch = True
+omit =
+    */tests/*
+    */test_*
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */.venv/*
+    */.env/*
+    */migrations/*
+    */alembic/*
+    */htmlcov/*
+    */.pytest_cache/*
+    */.git/*
+    */dist/*
+    */build/*
+    */__init__.py
+    */conftest.py
+    */conftest_*.py
+    */shared/*
+    */shared/**/*
+
+[report]
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    class .*\\(Protocol\\):
+    @(abc\\.)?abstractmethod
+
+[html]
+directory = htmlcov
+title = Payment Service Coverage Report
