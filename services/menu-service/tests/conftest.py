@@ -7,10 +7,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from database import Base, get_db
 from main import app as fastapi_app
 
-
-# Configurar modo de teste
-os.environ['TESTING'] = 'true'
-
 # Banco de dados SQLite para testes
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_menu.db"
 

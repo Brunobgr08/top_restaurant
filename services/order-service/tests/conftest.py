@@ -7,8 +7,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from database import Base, get_db
 from main import app as fastapi_app
 
-os.environ['TESTING'] = 'true'
-
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test_order.db"
 
 engine = create_engine(
@@ -42,12 +40,24 @@ def mock_kafka_dependencies():
             'consumer': mock_consumer
         }
 
+def override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.rollback()
+        db.close()
+
 @pytest.fixture(scope="module")
 def client():
+    fastapi_app.dependency_overrides[get_db] = override_get_db
+
     Base.metadata.create_all(bind=engine)
     with TestClient(fastapi_app) as c:
         yield c
     Base.metadata.drop_all(bind=engine)
+
+    fastapi_app.dependency_overrides.clear()
 
 @pytest.fixture(scope="function")
 def db_session():
