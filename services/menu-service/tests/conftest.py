@@ -19,25 +19,13 @@ engine = create_engine(
 )
 TestingSessionLocal = scoped_session(sessionmaker(bind=engine))
 
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-fastapi_app.dependency_overrides[get_db] = override_get_db
-
 @pytest.fixture(autouse=True)
 def mock_kafka_dependencies():
-    """Mock automático de todas as dependências do Kafka"""
     with patch('kafka_producer.publish_menu_updated') as mock_publish_menu, \
          patch('shared.kafka.producer.get_kafka_producer') as mock_get_producer:
 
-        # Configurar mocks
         mock_publish_menu.return_value = None
 
-        # Mock do producer
         mock_producer = MagicMock()
         mock_producer.publish_message.return_value = True
         mock_get_producer.return_value = mock_producer
@@ -49,7 +37,6 @@ def mock_kafka_dependencies():
 
 @pytest.fixture(scope="module")
 def client():
-    """Cliente de teste com banco de dados isolado"""
     Base.metadata.create_all(bind=engine)
 
     with TestClient(fastapi_app) as c:
@@ -59,7 +46,6 @@ def client():
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Sessão de banco de dados para testes funcionais"""
     db = TestingSessionLocal()
     try:
         yield db

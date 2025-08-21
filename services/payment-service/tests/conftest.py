@@ -16,14 +16,6 @@ engine = create_engine(
 )
 TestingSessionLocal = scoped_session(sessionmaker(bind=engine))
 
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-fastapi_app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(autouse=True)
 def mock_kafka_dependencies():
@@ -66,33 +58,3 @@ def db_session():
     finally:
         db.rollback()
         db.close()
-
-@pytest.fixture
-def mock_kafka_producer():
-    with patch('kafka_producer.get_kafka_producer') as mock_get:
-        mock_producer = MagicMock()
-        mock_producer.publish_message.return_value = True
-        mock_get.return_value = mock_producer
-        yield mock_producer
-
-@pytest.fixture
-def mock_kafka_consumer():
-    with patch('kafka_consumer.KafkaConsumerWrapper') as mock_wrapper:
-        mock_consumer = MagicMock()
-        mock_consumer.subscribe_and_consume = MagicMock()
-        mock_wrapper.return_value = mock_consumer
-        yield mock_consumer
-
-@pytest.fixture
-def published_messages():
-    messages = []
-
-    def capture_message(topic, message, key=None):
-        messages.append({
-            'topic': topic,
-            'message': message,
-            'key': key
-        })
-        return True
-
-    return messages, capture_message
