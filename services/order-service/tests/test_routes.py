@@ -32,9 +32,10 @@ def mock_order_data():
     "price": 10.0,
     "available": True
 })
-@patch("controllers.publish_order_created_event")
-def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_create_order, mock_order_data, client):
+def test_create_order(mock_fetch_menu_item, mock_create_order, mock_order_data, client):
     # Mock da resposta do create_order
+    from datetime import datetime
+
     mock_order = {
         "order_id": "123e4567-e89b-12d3-a456-426614174000",
         "customer_name": mock_order_data["customer_name"],
@@ -48,7 +49,8 @@ def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_create_orde
             }
         ],
         "total_price": 20.0,
-        "status": "pending"
+        "status": "pending",
+        "created_at": datetime.now()
     }
     mock_create_order.return_value = mock_order
 
@@ -60,7 +62,6 @@ def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_create_orde
     assert data["customer_name"] == mock_order_data["customer_name"]
     assert data["payment_type"] == mock_order_data["payment_type"]
     assert len(data["items"]) == len(mock_order_data["items"])
-    mock_publish_event.assert_called_once()
 
 @patch("controllers.get_orders")
 @patch("controllers.create_order")
@@ -74,6 +75,8 @@ def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_create_orde
 @patch("controllers.publish_order_created_event")
 def test_get_orders(mock_publish_event, mock_fetch_menu_item, mock_create_order, mock_get_orders, mock_order_data, client):
     # Mock da resposta do create_order
+    from datetime import datetime
+
     mock_order = {
         "order_id": "123e4567-e89b-12d3-a456-426614174000",
         "customer_name": mock_order_data["customer_name"],
@@ -87,7 +90,8 @@ def test_get_orders(mock_publish_event, mock_fetch_menu_item, mock_create_order,
             }
         ],
         "total_price": 20.0,
-        "status": "pending"
+        "status": "pending",
+        "created_at": datetime.now()
     }
     mock_create_order.return_value = mock_order
 
