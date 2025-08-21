@@ -24,6 +24,7 @@ def mock_order_data():
         ]
     }
 
+@patch("controllers.create_order")
 @patch("controllers.fetch_menu_item", return_value={
     "id": "11111111-1111-1111-1111-111111111111",
     "name": "Item Teste",
@@ -31,9 +32,26 @@ def mock_order_data():
     "price": 10.0,
     "available": True
 })
-
 @patch("controllers.publish_order_created_event")
-def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_order_data, client):
+def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_create_order, mock_order_data, client):
+    # Mock da resposta do create_order
+    mock_order = {
+        "order_id": "123e4567-e89b-12d3-a456-426614174000",
+        "customer_name": mock_order_data["customer_name"],
+        "payment_type": mock_order_data["payment_type"],
+        "items": [
+            {
+                "item_id": "11111111-1111-1111-1111-111111111111",
+                "item_name": "Item Teste",
+                "quantity": 2,
+                "unit_price": 10.0
+            }
+        ],
+        "total_price": 20.0,
+        "status": "pending"
+    }
+    mock_create_order.return_value = mock_order
+
     response = client.post(f"{API_PREFIX}/orders", json=mock_order_data)
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -44,6 +62,8 @@ def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_order_data,
     assert len(data["items"]) == len(mock_order_data["items"])
     mock_publish_event.assert_called_once()
 
+@patch("controllers.get_orders")
+@patch("controllers.create_order")
 @patch("controllers.fetch_menu_item", return_value={
     "id": "11111111-1111-1111-1111-111111111111",
     "name": "Item Teste",
@@ -51,9 +71,29 @@ def test_create_order(mock_publish_event, mock_fetch_menu_item, mock_order_data,
     "price": 10.0,
     "available": True
 })
-
 @patch("controllers.publish_order_created_event")
-def test_get_orders(mock_publish_event, mock_fetch_menu_item, mock_order_data, client):
+def test_get_orders(mock_publish_event, mock_fetch_menu_item, mock_create_order, mock_get_orders, mock_order_data, client):
+    # Mock da resposta do create_order
+    mock_order = {
+        "order_id": "123e4567-e89b-12d3-a456-426614174000",
+        "customer_name": mock_order_data["customer_name"],
+        "payment_type": mock_order_data["payment_type"],
+        "items": [
+            {
+                "item_id": "11111111-1111-1111-1111-111111111111",
+                "item_name": "Item Teste",
+                "quantity": 2,
+                "unit_price": 10.0
+            }
+        ],
+        "total_price": 20.0,
+        "status": "pending"
+    }
+    mock_create_order.return_value = mock_order
+
+    # Mock da resposta do get_orders
+    mock_get_orders.return_value = [mock_order]
+
     post_response = client.post(f"{API_PREFIX}/orders", json=mock_order_data)
     assert post_response.status_code == status.HTTP_201_CREATED
 
