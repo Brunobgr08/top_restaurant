@@ -1,12 +1,19 @@
+import os
+import time
+import logging
+from dotenv import load_dotenv
 from kafka.admin import KafkaAdminClient, NewTopic
 from kafka.errors import TopicAlreadyExistsError
-import logging
-import time
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("kafka-init")
 
-BROKERS = ['kafka-controller:9092', 'kafka-broker-2:9094', 'kafka-broker-3:9095']
+# Converte a string KAFKA_BROKERS (separada por vírgulas) em lista
+# Fallback para os brokers locais padrão se KAFKA_BROKERS não estiver definida
+BROKERS_STR = os.getenv('KAFKA_BROKERS', 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095')
+BROKERS = [broker.strip() for broker in BROKERS_STR.split(',') if broker.strip()]
 
 time.sleep(5)
 
