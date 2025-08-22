@@ -23,7 +23,7 @@ conf = {
 LOCAL_BROKERS = os.getenv('KAFKA_BROKERS', 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095')
 
 class KafkaProducerWrapper:
-    def __init__(self, bootstrap_servers: LOCAL_BROKERS, max_retries: int = 5, retry_delay: int = 5):
+    def __init__(self, bootstrap_servers: str = LOCAL_BROKERS, max_retries: int = 5, retry_delay: int = 5):
         # Configuração base do producer
         producer_conf = {
             'message.timeout.ms': 10000,
