@@ -1,24 +1,59 @@
+import os
 import json
 import logging
+from dotenv import load_dotenv
 from typing import Callable, Dict, Any
 from confluent_kafka import Consumer, KafkaException
 from functools import wraps
 
+load_dotenv()
+
 logger = logging.getLogger("kafka-consumer")
 logger.setLevel(logging.INFO)
 
+conf = {
+    'bootstrap.servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
+    'security.protocol': os.getenv('KAFKA_SECURITY_PROTOCOL', 'SASL_SSL'),
+    'sasl.mechanism': os.getenv('KAFKA_SASL_MECHANISM', 'PLAIN'),
+    'sasl.username': os.getenv('KAFKA_SASL_USERNAME'),
+    'sasl.password': os.getenv('KAFKA_SASL_PASSWORD')
+}
+
+LOCAL_BROKERS = os.getenv('KAFKA_BROKERS', 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095')
+
 class KafkaConsumerWrapper:
-    def __init__(self, bootstrap_servers: str = 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095', group_id: str = None):
-        self._conf = {
-            'bootstrap.servers': bootstrap_servers,
+    def __init__(self, bootstrap_servers: str = LOCAL_BROKERS, group_id: str = None):
+        # Configuração base do consumer
+        consumer_conf = {
             'group.id': group_id,
             'auto.offset.reset': 'earliest',
             'enable.auto.commit': False,
             'session.timeout.ms': 10000,
             'heartbeat.interval.ms': 3000
         }
+
+        # Verifica se estamos em ambiente de produção (com configuração de segurança)
+        is_production = all([
+            conf.get('bootstrap.servers'),
+            conf.get('security.protocol'),
+            conf.get('sasl.mechanism'),
+            conf.get('sasl.username'),
+            conf.get('sasl.password')
+        ])
+
+        if is_production:
+            # Usa a configuração completa de produção
+            self._conf = {**conf, **consumer_conf}
+            logger.info(f"Consumer configurado para produção com brokers: {conf['bootstrap.servers']}")
+        else:
+            # Usa configuração local com os brokers fornecidos
+            self._conf = {
+                'bootstrap.servers': bootstrap_servers,
+                **consumer_conf
+            }
+            logger.info(f"Consumer configurado para desenvolvimento local com brokers: {bootstrap_servers}")
+
         self._consumer = Consumer(self._conf)
-        logger.info(f"Consumer configurado para brokers: {bootstrap_servers}")
 
     def handle_errors(f):
         @wraps(f)

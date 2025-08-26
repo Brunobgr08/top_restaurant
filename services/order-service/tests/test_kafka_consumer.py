@@ -47,7 +47,6 @@ def test_process_menu_updated_event_success():
         mock_cache.assert_called_once_with("item123", message["payload"])
 
 def test_process_menu_updated_event_exception():
-    # Falta item_id para causar erro
     message = {
         "event_type": "menu_updated",
         "payload": {

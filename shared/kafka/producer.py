@@ -1,23 +1,59 @@
+import os
 import json
 import logging
 import time
 from typing import Any, Dict
 from confluent_kafka import Producer, KafkaException
 from confluent_kafka.admin import AdminClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger("kafka-producer")
 logger.setLevel(logging.INFO)
 
+conf = {
+    'bootstrap.servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
+    'security.protocol': os.getenv('KAFKA_SECURITY_PROTOCOL', 'SASL_SSL'),
+    'sasl.mechanism': os.getenv('KAFKA_SASL_MECHANISM', 'PLAIN'),
+    'sasl.username': os.getenv('KAFKA_SASL_USERNAME'),
+    'sasl.password': os.getenv('KAFKA_SASL_PASSWORD')
+}
+
+LOCAL_BROKERS = os.getenv('KAFKA_BROKERS', 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095')
+
 class KafkaProducerWrapper:
-    def __init__(self, bootstrap_servers: str = 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095', max_retries: int = 5, retry_delay: int = 5):
-        self._conf = {
-            'bootstrap.servers': bootstrap_servers,
+    def __init__(self, bootstrap_servers: str = LOCAL_BROKERS, max_retries: int = 5, retry_delay: int = 5):
+        # Configuração base do producer
+        producer_conf = {
             'message.timeout.ms': 10000,
             'retry.backoff.ms': 1500,
             'retry.backoff.max.ms': 3000,
             'socket.keepalive.enable': True,
             'socket.timeout.ms': 10000,
         }
+
+        # Verifica se estamos em ambiente de produção (com configuração de segurança)
+        is_production = all([
+            conf.get('bootstrap.servers'),
+            conf.get('security.protocol'),
+            conf.get('sasl.mechanism'),
+            conf.get('sasl.username'),
+            conf.get('sasl.password')
+        ])
+
+        if is_production:
+            # Usa a configuração completa de produção
+            self._conf = {**conf, **producer_conf}
+            logger.info(f"Producer configurado para produção com brokers: {conf['bootstrap.servers']}")
+        else:
+            # Usa configuração local com os brokers fornecidos
+            self._conf = {
+                'bootstrap.servers': bootstrap_servers,
+                **producer_conf
+            }
+            logger.info(f"Producer configurado para desenvolvimento local com brokers: {bootstrap_servers}")
+
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self._producer = None
