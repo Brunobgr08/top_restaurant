@@ -2,7 +2,7 @@ name: Railway Production Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -10,24 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Railway CLI
-      run: |
-        curl -fsSL https://railway.app/install.sh | sh
-        echo "$HOME/.railway/bin" >> $GITHUB_PATH
+      - name: Setup Railway CLI
+        run: |
+          curl -fsSL https://railway.app/install.sh | sh
+          echo "$HOME/.railway/bin" >> $GITHUB_PATH
 
-    - name: Deploy to Railway
-      env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      run: |
-        railway up --service=menu-service --detach
-        railway up --service=order-service --detach
-        railway up --service=payment-service --detach
-        railway up --service=frontend --detach
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --detach
 
-    - name: Health Check
-      run: |
-        sleep 30
-        curl -f https://your-app.railway.app/health || exit 1
+      - name: Health Check
+        run: |
+          sleep 30
+          curl -f https://your-app.railway.app/health || exit 1
