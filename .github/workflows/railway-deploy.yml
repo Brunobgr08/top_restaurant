@@ -22,7 +22,10 @@ jobs:
       env:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       run: |
-        railway up --detach
+        railway up --service=menu-service --detach
+        railway up --service=order-service --detach
+        railway up --service=payment-service --detach
+        railway up --service=frontend --detach
 
     - name: Health Check
       run: |
