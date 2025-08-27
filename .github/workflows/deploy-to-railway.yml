@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/action@v1
+      - uses: railwayapp/railway@v1
         with:
           service: menu-service
           token: ${{ secrets.RAILWAY_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/action@v1
+      - uses: railwayapp/railway@v1
         with:
           service: order-service
           token: ${{ secrets.RAILWAY_TOKEN }}
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/action@v1
+      - uses: railwayapp/railway@v1
         with:
           service: payment-service
           token: ${{ secrets.RAILWAY_TOKEN }}
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/action@v1
+      - uses: railwayapp/railway@v1
         with:
           service: frontend
           token: ${{ secrets.RAILWAY_TOKEN }}
