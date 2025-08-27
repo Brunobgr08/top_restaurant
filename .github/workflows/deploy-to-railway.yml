@@ -48,25 +48,42 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)/../.."
           python -m pytest tests/ -v
 
-  build-and-deploy:
-    needs: test
+  deploy-menu-service:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Railway
-        uses: railwayapp/railway-deploy@v1
+      - uses: railwayapp/action@v1
         with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+          service: menu-service
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          environment: production
 
-      - name: Deploy to Railway
-        run: |
-          railway up --service=menu-service
-          railway up --service=order-service
-          railway up --service=payment-service
-          railway up --service=frontend
+  deploy-order-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: railwayapp/action@v1
+        with:
+          service: order-service
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          environment: production
+
+  deploy-payment-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: railwayapp/action@v1
+        with:
+          service: payment-service
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          environment: production
+
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: railwayapp/action@v1
+        with:
+          service: frontend
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          environment: production

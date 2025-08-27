@@ -2,20 +2,17 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Instala dependências do sistema para confluent-kafka
-RUN apt-get update && apt-get install -y \
-    librdkafka-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Instale apenas dependências necessárias
+RUN apt-get update && apt-get install -y librdkafka-dev && rm -rf /var/lib/apt/lists/*
 
-# Primeiro copia apenas requirements.txt para aproveitar cache do Docker
-COPY services/payment-service/requirements.txt .
+COPY shared /app/shared
+COPY services/payment-service/ /app/
+
+# Instale dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Depois copia o resto do código
-COPY shared /app/shared
-COPY services/payment-service/ .
+USER 1000
 
-# Configura o PYTHONPATH para incluir a pasta shared
-ENV PYTHONPATH="${PYTHONPATH}:/app"
+EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5002"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
