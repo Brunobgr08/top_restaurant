@@ -66,7 +66,6 @@ jobs:
       - name: Deploy Menu Service
         run: |
           cd services/menu-service
-          railway login --token $RAILWAY_TOKEN
           railway up --service menu-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
