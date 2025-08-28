@@ -52,7 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/railway@v1
+      - name: Set working directory
+        run: cd services/menu-service
+      - uses: railwayapp/action@v1.1.2
         with:
           service: menu-service
           token: ${{ secrets.RAILWAY_TOKEN }}
@@ -62,7 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/railway@v1
+      - name: Set working directory
+        run: cd services/order-service
+      - uses: railwayapp/action@v1.1.2
         with:
           service: order-service
           token: ${{ secrets.RAILWAY_TOKEN }}
@@ -72,7 +76,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/railway@v1
+      - name: Set working directory
+        run: cd services/payment-service
+      - uses: railwayapp/action@v1.1.2
         with:
           service: payment-service
           token: ${{ secrets.RAILWAY_TOKEN }}
@@ -82,7 +88,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: railwayapp/railway@v1
+      - name: Set working directory
+        run: cd frontend
+      - uses: railwayapp/action@v1.1.2
         with:
           service: frontend
           token: ${{ secrets.RAILWAY_TOKEN }}
