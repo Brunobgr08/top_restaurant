@@ -33,8 +33,14 @@ def test_initialization_success(mock_producer_and_admin, caplog):
         'socket.timeout.ms': 10000,
     }
 
+    expected_admin_conf = {
+        'bootstrap.servers': 'localhost:9092',
+        'socket.keepalive.enable': True,
+        'socket.timeout.ms': 10000,
+    }
+
     mock_producer.assert_called_once_with(expected_conf)
-    mock_admin.assert_called_once_with({'bootstrap.servers': 'localhost:9092'})
+    mock_admin.assert_called_once_with(expected_admin_conf)
     assert "Conectado ao Kafka em localhost:9092" in caplog.text
 
 def test_initialization_with_retries(mock_producer_and_admin, caplog):
