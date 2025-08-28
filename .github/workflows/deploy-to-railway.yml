@@ -60,7 +60,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy
-        run: railway up --detach
+        run: railway up --service menu-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
