@@ -75,14 +75,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set working directory
-        run: cd services/order-service
+      - name: Copy shared folder to order-service
+        run: |
+          echo "Copiando pasta shared para order-service..."
+          cp -r ./shared ./services/order-service/
+          echo "Estrutura do order-service após cópia:"
+          ls -la ./services/order-service/
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy
-        run: railway up --service order-service --detach
+      - name: Deploy Order Service
+        run: |
+          cd services/order-service
+          railway up --service order-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -91,14 +97,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set working directory
-        run: cd services/payment-service
+      - name: Copy shared folder to payment-service
+        run: |
+          echo "Copiando pasta shared para payment-service..."
+          cp -r ./shared ./services/payment-service/
+          echo "Estrutura do payment-service após cópia:"
+          ls -la ./services/payment-service/
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy
-        run: railway up --service payment-service --detach
+      - name: Deploy Payment Service
+        run: |
+          cd services/payment-service
+          railway up --service payment-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
