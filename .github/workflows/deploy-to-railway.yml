@@ -53,14 +53,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set working directory
-        run: cd services/menu-service
+      - name: Copy shared folder to menu-service
+        run: |
+          echo "Copiando pasta shared para menu-service..."
+          cp -r ../shared ./services/menu-service/
+          echo "Estrutura do menu-service após cópia:"
+          ls -la ./services/menu-service/
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy
-        run: railway up --service menu-service --detach
+      - name: Deploy Menu Service
+        run: |
+          cd services/menu-service
+          railway login --token $RAILWAY_TOKEN
+          railway up --service menu-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
