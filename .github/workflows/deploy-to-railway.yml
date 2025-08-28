@@ -56,7 +56,7 @@ jobs:
       - name: Copy shared folder to menu-service
         run: |
           echo "Estrutura atual"
-          ls -la .
+          ls -la ./shared
           echo "Copiando pasta shared para menu-service..."
           cp -r ../shared ./services/menu-service/
           echo "Estrutura do menu-service após cópia:"
