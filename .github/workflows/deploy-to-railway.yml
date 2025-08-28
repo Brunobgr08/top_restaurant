@@ -68,34 +68,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set working directory
         run: cd services/order-service
-      - uses: railwayapp/action@v1.1.2
-        with:
-          service: order-service
-          token: ${{ secrets.RAILWAY_TOKEN }}
-          environment: production
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        run: railway up --service order-service --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
   deploy-payment-service:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set working directory
         run: cd services/payment-service
-      - uses: railwayapp/action@v1.1.2
-        with:
-          service: payment-service
-          token: ${{ secrets.RAILWAY_TOKEN }}
-          environment: production
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        run: railway up --service payment-service --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
   deploy-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set working directory
         run: cd frontend
-      - uses: railwayapp/action@v1.1.2
-        with:
-          service: frontend
-          token: ${{ secrets.RAILWAY_TOKEN }}
-          environment: production
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        run: railway up --service frontend --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
