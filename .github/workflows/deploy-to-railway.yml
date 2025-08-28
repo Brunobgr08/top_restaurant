@@ -52,13 +52,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set working directory
         run: cd services/menu-service
-      - uses: railwayapp/action@v1.1.2
-        with:
-          service: menu-service
-          token: ${{ secrets.RAILWAY_TOKEN }}
-          environment: production
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy
+        run: railway up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
   deploy-order-service:
     runs-on: ubuntu-latest
