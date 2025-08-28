@@ -12,46 +12,53 @@ load_dotenv()
 logger = logging.getLogger("kafka-producer")
 logger.setLevel(logging.INFO)
 
-conf = {
+
+base_conf = {
     'bootstrap.servers': os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
     'security.protocol': os.getenv('KAFKA_SECURITY_PROTOCOL', 'SASL_SSL'),
     'sasl.mechanism': os.getenv('KAFKA_SASL_MECHANISM', 'PLAIN'),
     'sasl.username': os.getenv('KAFKA_SASL_USERNAME'),
-    'sasl.password': os.getenv('KAFKA_SASL_PASSWORD')
+    'sasl.password': os.getenv('KAFKA_SASL_PASSWORD'),
+    'socket.keepalive.enable': True,
+    'socket.timeout.ms': 10000,
+    'api.version.request': True,
+}
+
+
+producer_specific_conf = {
+    'message.timeout.ms': 10000,
+    'retry.backoff.ms': 1500,
+    'retry.backoff.max.ms': 3000,
 }
 
 LOCAL_BROKERS = os.getenv('KAFKA_BROKERS', 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095')
 
 class KafkaProducerWrapper:
     def __init__(self, bootstrap_servers: str = LOCAL_BROKERS, max_retries: int = 5, retry_delay: int = 5):
-        # Configuração base do producer
-        producer_conf = {
-            'message.timeout.ms': 10000,
-            'retry.backoff.ms': 1500,
-            'retry.backoff.max.ms': 3000,
-            'socket.keepalive.enable': True,
-            'socket.timeout.ms': 10000,
-        }
 
-        # Verifica se estamos em ambiente de produção (com configuração de segurança)
+        # Verifica se estamos em ambiente de produção
         is_production = all([
-            conf.get('bootstrap.servers'),
-            conf.get('security.protocol'),
-            conf.get('sasl.mechanism'),
-            conf.get('sasl.username'),
-            conf.get('sasl.password')
+            base_conf.get('bootstrap.servers'),
+            base_conf.get('security.protocol'),
+            base_conf.get('sasl.mechanism'),
+            base_conf.get('sasl.username'),
+            base_conf.get('sasl.password')
         ])
 
         if is_production:
-            # Usa a configuração completa de produção
-            self._conf = {**conf, **producer_conf}
-            logger.info(f"Producer configurado para produção com brokers: {conf['bootstrap.servers']}")
+            # Configuração de produção = base + específicas do producer
+            self._producer_conf = {**base_conf, **producer_specific_conf}
+            self._admin_conf = base_conf  # Admin usa apenas a base
+            logger.info(f"Producer configurado para produção com brokers: {base_conf['bootstrap.servers']}")
         else:
-            # Usa configuração local com os brokers fornecidos
-            self._conf = {
+            # Configuração local
+            local_base = {
                 'bootstrap.servers': bootstrap_servers,
-                **producer_conf
+                'socket.keepalive.enable': True,
+                'socket.timeout.ms': 10000,
             }
+            self._producer_conf = {**local_base, **producer_specific_conf}
+            self._admin_conf = local_base
             logger.info(f"Producer configurado para desenvolvimento local com brokers: {bootstrap_servers}")
 
         self.max_retries = max_retries
@@ -63,12 +70,14 @@ class KafkaProducerWrapper:
         """Tenta conectar com retry exponencial"""
         for attempt in range(self.max_retries):
             try:
-                self._producer = Producer(self._conf)
-                # Testa a conexão com um ping leve
-                admin_client = AdminClient({'bootstrap.servers': self._conf['bootstrap.servers']})
+                self._producer = Producer(self._producer_conf)
+
+                admin_client = AdminClient(self._admin_conf)
                 admin_client.list_topics(timeout=5)
-                logger.info(f"Conectado ao Kafka em {self._conf['bootstrap.servers']}")
+
+                logger.info(f"Conectado ao Kafka em {self._admin_conf['bootstrap.servers']}")
                 return
+
             except KafkaException as e:
                 logger.warning(f"Tentativa {attempt + 1}/{self.max_retries} falhou: {str(e)}")
                 if attempt == self.max_retries - 1:
