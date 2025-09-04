@@ -1,6 +1,7 @@
 import logging
 import requests
 import json
+import os
 from fastapi import status, HTTPException
 from uuid import UUID
 from sqlalchemy import select
@@ -10,8 +11,13 @@ from schemas import OrderCreate
 from kafka_producer import publish_order_created_event
 from cache import set_cached_menu_item, get_cached_menu_item
 from shared.enums import PaymentStatus
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+MENU_HOST = os.getenv("MENU_HOST", "http://menu-service:5003")
 
 def fetch_menu_item(item_id: str) -> dict:
     cached = get_cached_menu_item(item_id)
@@ -20,7 +26,7 @@ def fetch_menu_item(item_id: str) -> dict:
         return cached
 
     logger.info(f"🔄 Cache MISS. Consultando menu-service para item {item_id}")
-    response = requests.get(f"http://menu-service:5003/api/v1/menu/{item_id}")
+    response = requests.get(f"{MENU_HOST}/api/v1/menu/{item_id}")
     if response.status_code == 200:
         item_data = response.json()
         set_cached_menu_item(item_id, item_data)
