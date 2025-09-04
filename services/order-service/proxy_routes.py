@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Request, Response
+import os
 import httpx
+from fastapi import APIRouter, Request, Response
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter()
 
+PAYMENT_HOST = os.getenv("PAYMENT_HOST", "payment-service:5002")
 
 async def proxy_request(request: Request, upstream_url: str):
     try:
@@ -31,12 +36,12 @@ async def proxy_request(request: Request, upstream_url: str):
 
 @router.api_route("/payments", methods=["GET"])
 async def list_payments_proxy(request: Request):
-    upstream_url = f"http://payment-service:5002/api/v1/payments"
+    upstream_url = f"https://{PAYMENT_HOST}/api/v1/payments"
     return await proxy_request(request, upstream_url)
 
 
 @router.api_route("/payments/confirm/{order_id}", methods=["PUT"])
 async def confirm_payment_proxy(order_id: str, request: Request):
-    upstream_url = f"http://payment-service:5002/api/v1/payments/confirm/{order_id}"
+    upstream_url = f"https://{PAYMENT_HOST}/api/v1/payments/confirm/{order_id}"
     return await proxy_request(request, upstream_url)
 

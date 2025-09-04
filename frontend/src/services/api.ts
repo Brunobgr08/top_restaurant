@@ -1,11 +1,31 @@
 import { MenuItem, OrderFormData, ApiResponse } from './types';
 
-const API_ORDERS = import.meta.env.VITE_API_BASE_ORDERS;
-const API_MENU = import.meta.env.VITE_API_BASE_MENU;
+// Detectar ambiente - desenvolvimento ou produção
+const isDevelopment = import.meta.env.MODE === 'development';
+
+// Configurar URLs base baseadas no ambiente
+const getBaseURL = (service: 'orders' | 'menu') => {
+  if (isDevelopment) {
+    // Em desenvolvimento, usar variáveis de ambiente com URLs completas
+    return service === 'orders'
+      ? import.meta.env.VITE_API_BASE_ORDERS
+      : import.meta.env.VITE_API_BASE_MENU;
+  } else {
+    // Em produção, usar caminhos relativos (proxy do Nginx)
+    return `/${service}`;
+  }
+};
+
+const API_ORDERS = getBaseURL('orders');
+const API_MENU = getBaseURL('menu');
 
 export async function fetchMenu(): Promise<MenuItem[]> {
   try {
-    const response = await fetch(`${API_MENU}/api/v1/menu`);
+    const url = isDevelopment
+      ? `${API_MENU}/api/v1/menu`
+      : `/api/v1/menu`; // Em produção, o proxy do Nginx já inclui o caminho base
+
+    const response = await fetch(url);
     const contentType = response.headers.get('content-type');
 
     if (!response.ok || !contentType?.includes('application/json')) {
@@ -13,7 +33,6 @@ export async function fetchMenu(): Promise<MenuItem[]> {
     }
 
     const data = await response.json();
-    // console.log('Menu data:', data);
     return data;
   } catch (err) {
     console.error('Erro ao buscar menu:', err);
@@ -23,7 +42,11 @@ export async function fetchMenu(): Promise<MenuItem[]> {
 }
 
 export async function createOrder(data: OrderFormData): Promise<ApiResponse> {
-  const res = await fetch(`${API_ORDERS}/api/v1/orders`, {
+  const url = isDevelopment
+    ? `${API_ORDERS}/api/v1/orders`
+    : `/api/v1/orders`; // Em produção, o proxy do Nginx já inclui o caminho base
+
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
