@@ -2,16 +2,20 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Instale apenas dependências necessárias
-RUN apt-get update && apt-get install -y librdkafka-dev && rm -rf /var/lib/apt/lists/*
+# Instala dependências do sistema
+RUN apt-get update && apt-get install -y \
+    librdkafka-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY shared /app/shared
-COPY services/order-service/ /app/
-
-# Instale dependências
+# Copia APENAS os requirements primeiro (para cache)
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-USER 1000
+# Copia o código do serviço
+COPY . .
+
+# Copia o shared
+COPY shared /app/shared
 
 EXPOSE 8000
 

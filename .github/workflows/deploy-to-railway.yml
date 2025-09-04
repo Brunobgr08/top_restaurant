@@ -64,8 +64,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy Menu Service
-        run: |
-          railway up --service menu-service --detach
+        run: railway up --service menu-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -85,9 +84,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy Order Service
-        run: |
-          cd services/order-service
-          railway up --service order-service --detach
+        run: railway up --service order-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -107,9 +104,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy Payment Service
-        run: |
-          cd services/payment-service
-          railway up --service payment-service --detach
+        run: railway up --service payment-service --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 

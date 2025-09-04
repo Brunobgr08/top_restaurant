@@ -7,11 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuração do banco de dados via variáveis de ambiente para produção
-DB_HOST = os.getenv("DB_HOST", "order-db")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "orderdb")
-DB_USER = os.getenv("DB_USER", "user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "pass")
+DB_HOST = os.getenv("ORDER_DB_HOST", "order-db")
+DB_PORT = os.getenv("ORDER_DB_PORT", "5432")
+DB_NAME = os.getenv("ORDER_DB_NAME", "orderdb")
+DB_USER = os.getenv("ORDER_DB_USER", "user")
+DB_PASSWORD = os.getenv("ORDER_DB_PASSWORD", "pass")
 
 # Construir URL do banco de dados
 DATABASE_URL = os.getenv("DATABASE_URL")
