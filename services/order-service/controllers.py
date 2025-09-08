@@ -26,7 +26,7 @@ def fetch_menu_item(item_id: str) -> dict:
         return cached
 
     logger.info(f"🔄 Cache MISS. Consultando menu-service para item {item_id}")
-    response = requests.get(f"https://{MENU_HOST}/api/v1/menu/{item_id}")
+    response = requests.get(f"http://{MENU_HOST}/api/v1/menu/{item_id}")
     if response.status_code == 200:
         item_data = response.json()
         set_cached_menu_item(item_id, item_data)
