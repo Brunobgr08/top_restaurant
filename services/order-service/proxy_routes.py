@@ -45,7 +45,7 @@
 #     upstream_url = f"https://{PAYMENT_HOST}/api/v1/payments/confirm/{order_id}"
 #     return await proxy_request(request, upstream_url)
 
-
+import logging
 
 import os
 import httpx
@@ -53,6 +53,12 @@ from fastapi import APIRouter, Request, Response
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(levelname)s:%(name)s:%(message)s'))
+logger.addHandler(handler)
 
 router = APIRouter()
 
@@ -64,13 +70,14 @@ PAYMENT_SERVICE_URL = os.getenv(
 async def proxy_request(request: Request, upstream_url: str):
     try:
         async with httpx.AsyncClient() as client:
+            logger.info(f"------>>> Upstream_url: {upstream_url}")
             headers = {
                 key: value for key, value in request.headers.items()
                 if key.lower() not in ["host", "content-length"]
             }
-
+            logger.info(f"------>>> Headers: {headers}")
             url_with_params = str(request.url).replace(str(request.base_url), upstream_url)
-
+            logger.info(f"------>>> Url_with_params: {url_with_params}")
             proxy_response = await client.request(
                 method=request.method,
                 url=url_with_params,
@@ -78,7 +85,7 @@ async def proxy_request(request: Request, upstream_url: str):
                 content=await request.body(),
                 timeout=30.0
             )
-
+            logger.info(f"------>>> Proxy_response: {proxy_response}")
             return Response(
                 content=proxy_response.content,
                 status_code=proxy_response.status_code,
