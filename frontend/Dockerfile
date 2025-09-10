@@ -38,13 +38,13 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # 1. Copia apenas os arquivos necessários para instalação de dependências
-COPY package*..json ./
+COPY package*.json ./
+COPY package-lock.json ./
 COPY tsconfig*.json ./
 COPY vite.config.js ./
 
 # 2. Instala APENAS as dependências necessárias para build (não todas as devDependencies)
-RUN npm cache clean --force
-RUN npm ci
+RUN npm ci --no-audit --prefer-offline
 
 # 3. Copia o código fonte
 COPY . .
