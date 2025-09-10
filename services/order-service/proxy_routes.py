@@ -76,8 +76,6 @@ async def proxy_request(request: Request, upstream_url: str):
                 if key.lower() not in ["host", "content-length"]
             }
             logger.info(f"------>>> Headers: {headers}")
-            # url_with_params = str(request.url).replace(str(request.base_url), upstream_url)
-            # logger.info(f"------>>> Url_with_params: {url_with_params}")
             proxy_response = await client.request(
                 method=request.method,
                 url=upstream_url,
