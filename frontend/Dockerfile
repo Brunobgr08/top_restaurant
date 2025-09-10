@@ -43,7 +43,8 @@ COPY tsconfig*.json ./
 COPY vite.config.js ./
 
 # 2. Instala APENAS as dependências necessárias para build (não todas as devDependencies)
-RUN npm cache clean --force && npm ci --silent
+RUN npm cache clean --force
+RUN npm ci
 
 # 3. Copia o código fonte
 COPY . .
