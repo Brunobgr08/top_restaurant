@@ -17,7 +17,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-MENU_HOST = os.getenv("MENU_HOST", "menu-service:5003")
+MENU_SERVICE_URL = os.getenv("MENU_SERVICE_URL", "menu-service:5003")
 
 def fetch_menu_item(item_id: str) -> dict:
     cached = get_cached_menu_item(item_id)
@@ -26,7 +26,7 @@ def fetch_menu_item(item_id: str) -> dict:
         return cached
 
     logger.info(f"🔄 Cache MISS. Consultando menu-service para item {item_id}")
-    response = requests.get(f"http://{MENU_HOST}/api/v1/menu/{item_id}")
+    response = requests.get(f"{MENU_SERVICE_URL}/api/v1/menu/{item_id}")
     if response.status_code == 200:
         item_data = response.json()
         set_cached_menu_item(item_id, item_data)
