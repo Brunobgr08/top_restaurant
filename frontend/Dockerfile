@@ -40,7 +40,7 @@ WORKDIR /app
 # 1. Copia apenas os arquivos necessários para instalação de dependências
 COPY package*..json ./
 COPY tsconfig*.json ./
-COPY vite.config.ts ./
+COPY vite.config.js ./
 
 # 2. Instala APENAS as dependências necessárias para build (não todas as devDependencies)
 RUN npm ci --silent --include=dev
