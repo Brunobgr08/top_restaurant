@@ -83,6 +83,7 @@ async def proxy_request(request: Request, upstream_url: str):
                 content=await request.body(),
                 timeout=30.0
             )
+            logger.info(f"------>>> Request: {Request}")
             logger.info(f"------>>> Proxy_response: {proxy_response}")
             return Response(
                 content=proxy_response.content,
