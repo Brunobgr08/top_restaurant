@@ -85,7 +85,7 @@ async def proxy_request(request: Request, upstream_url: str):
                 headers=dict(proxy_response.headers),
             )
     except httpx.ConnectError:
-        return Response(content="Payment service unavailable", status_code=503)
+        return Response(content="Payment service indisponível", status_code=503)
     except Exception as e:
         return Response(content=f"Erro ao redirecionar requisição: {str(e)}", status_code=500)
 

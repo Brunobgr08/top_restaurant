@@ -31,14 +31,14 @@ async def test_proxy_request_success(mock_async_client):
 
 @pytest.mark.asyncio
 @patch("proxy_routes.httpx.AsyncClient")
-async def test_proxy_request_failure(mock_async_client):
+async def test_proxy_request_failure_unavailable(mock_async_client):
     mock_client = AsyncMock()
     mock_async_client.return_value.__aenter__.return_value = mock_client
     mock_client.request.side_effect = httpx.ConnectError("Connection error")
 
     response = client.get(f"{API_PREFIX}/payments")
-    assert response.status_code == 500
-    assert "Erro ao redirecionar requisição" in response.text
+    assert response.status_code == 503
+    assert "Payment service indisponível" in response.text
 
 @patch("proxy_routes.proxy_request")
 def test_payments_proxy(mock_proxy):
