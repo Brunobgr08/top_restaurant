@@ -33,17 +33,16 @@
 
 ##################################################################################################
 
-# Estágio de construção - Instala dependências de BUILD
+# Estágio de construção
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# 1. Copia apenas os arquivos necessários para instalação de dependências
-COPY package*.json ./
-COPY package-lock.json ./
-COPY tsconfig*.json ./
+# 1. Copia arquivos necessários para instalação
+COPY package.json package-lock.json ./
 COPY vite.config.js ./
+COPY tsconfig*.json ./
 
-# 2. Instala APENAS as dependências necessárias para build (não todas as devDependencies)
+# 2. Instala dependências
 RUN npm ci --no-audit --prefer-offline
 
 # 3. Copia o código fonte
@@ -52,26 +51,22 @@ COPY . .
 # 4. Executa o build de produção
 RUN npm run build
 
-# Estágio de produção - Serve os arquivos estáticos
+# Estágio de produção
 FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
 
-# Remove configuração padrão do nginx
-RUN rm -rf /etc/nginx/conf.d/default.conf
+# Copia configuração principal do nginx
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copia arquivos estáticos do build
 COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
-# Copia configuração customizada do nginx
-COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
-
 # Configura permissões
-RUN chmod -R 755 /usr/share/nginx/html && \
-    chown -R nginx:nginx /var/cache/nginx /var/run
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R 755 /usr/share/nginx/html
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -qO- http://localhost:80 >/dev/null 2>&1 || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:80 || exit 1
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
