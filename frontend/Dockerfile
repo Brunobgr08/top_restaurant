@@ -51,14 +51,20 @@ COPY . .
 # 4. Executa o build de produção
 RUN npm run build
 
+# VERIFIQUE se o build gerou arquivos
+RUN ls -la /app/dist/ || exit 1
+
 # Estágio de produção
 FROM nginx:alpine
 
-# Copia configuração principal do nginx
+# Copia arquivos estáticos
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Configuração mínima do Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copia arquivos estáticos do build
-COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
+# Verifique a instalação do Nginx
+RUN nginx -v && ls -la /etc/nginx/
 
 # Configura permissões
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
