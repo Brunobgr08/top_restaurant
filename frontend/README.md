@@ -12,6 +12,7 @@ Aplicação frontend para o sistema de pedidos TopRestaurant, construída com Re
 - **React Hook Form** - Gerenciamento de formulários
 - **Framer Motion** - Animações
 - **Sonner** - Notificações toast
+- **Serve** - Servidor estático Node.js
 
 ## 🏗️ Arquitetura
 
@@ -23,8 +24,7 @@ frontend/
 │   ├── lib/           # Utilitários
 │   └── main.tsx       # Entry point
 ├── public/            # Assets estáticos
-├── nginx.conf         # Configuração Nginx
-└── Dockerfile         # Build multi-stage
+└── Dockerfile         # Build multi-stage com Node.js
 ```
 
 ## 🚀 Como Executar
@@ -48,14 +48,14 @@ Acesse: http://localhost:5173
 ```bash
 cd frontend
 docker build -t toprestaurant-frontend .
-docker run -p 3000:80 toprestaurant-frontend
+docker run -p 3000:3000 toprestaurant-frontend
 ```
 
 ## 🔧 Configuração
 
 ### Variáveis de Ambiente
 ```env
-# APIs (configuradas no nginx.conf)
+# APIs (configuradas no vite.config.js)
 VITE_API_BASE_ORDERS=http://localhost:5001
 VITE_API_BASE_MENU=http://localhost:5003
 ```
@@ -105,6 +105,8 @@ npm run dev          # Servidor de desenvolvimento
 npm run build        # Build para produção
 npm run preview      # Preview do build
 npm run lint         # Linting com ESLint
+npm run start        # Servidor de produção
+npm run serve        # Alias para start
 ```
 
 ## 📦 Build e Deploy
@@ -115,26 +117,19 @@ npm run lint         # Linting com ESLint
    - Executa `npm run build`
    - Gera pasta `dist/`
 
-2. **Stage 2**: Serve com Nginx
+2. **Stage 2**: Serve com Node.js
    - Copia arquivos do `dist/`
-   - Configura proxy para APIs
-   - Expõe na porta 80
+   - Usa `serve` para servir arquivos estáticos
+   - Expõe na porta 3000
 
-### Nginx Configuration
-```nginx
-# Proxy para APIs
-location /orders/ {
-    proxy_pass http://order-service:5001/;
-}
+### Servidor Node.js (serve)
+```bash
+# Comando de produção
+serve -s dist -l 3000
 
-location /menu/ {
-    proxy_pass http://menu-service:5003/;
-}
-
-# SPA fallback
-location / {
-    try_files $uri $uri/ /index.html;
-}
+# Flags importantes:
+# -s: SPA mode (fallback para index.html)
+# -l: Listen port
 ```
 
 ## 🔗 Integrações

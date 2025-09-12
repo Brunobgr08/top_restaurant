@@ -106,14 +106,29 @@ Há um frontend simples para interação com o sistema, construído com React, T
 ## 🖥️ Frontend
 
 - **Stack:** React + TypeScript + Vite + Tailwind CSS + ShadCN UI
+- **Servidor:** Node.js com `serve` (servidor estático)
 - **Funcionalidades:**
   - ✅ Visualização do cardápio
   - ✅ Criação de pedidos com múltiplos itens
   - ✅ Seleção de tipo de pagamento (manual/online)
   - ✅ Validação visual com animações
   - ✅ Design responsivo
-- **Build:** Nginx + Docker multi-stage
-- **Porta:** 3000 (mapeada para 80 no container)
+- **Build:** Docker multi-stage com Node.js
+- **Porta:** 3000
+
+## 📦 Build e Deploy
+
+### Processo de Build
+1. **Stage 1**: Build com Node.js
+   - Instala dependências
+   - Executa `npm run build`
+   - Gera pasta `dist/`
+
+2. **Stage 2**: Serve com Node.js
+   - Copia arquivos do `dist/`
+   - Usa servidor `serve` para arquivos estáticos
+   - Suporte a SPA com fallback para index.html
+   - Expõe na porta 3000
 
 ---
 

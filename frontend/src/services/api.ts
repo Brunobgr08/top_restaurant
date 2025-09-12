@@ -1,29 +1,11 @@
 import { MenuItem, OrderFormData, ApiResponse } from './types';
 
-// Detectar ambiente - desenvolvimento ou produção
-const isDevelopment = import.meta.env.MODE === 'development';
-
-// Configurar URLs base baseadas no ambiente
-const getBaseURL = (service: 'orders' | 'menu') => {
-  if (isDevelopment) {
-    // Em desenvolvimento, usar variáveis de ambiente com URLs completas
-    return service === 'orders'
-      ? import.meta.env.VITE_API_BASE_ORDERS
-      : import.meta.env.VITE_API_BASE_MENU;
-  } else {
-    // Em produção, usar caminhos relativos (proxy do Nginx)
-    return `/${service}`;
-  }
-};
-
-const API_ORDERS = getBaseURL('orders');
-const API_MENU = getBaseURL('menu');
+const API_ORDERS = import.meta.env.VITE_API_BASE_ORDERS;
+const API_MENU = import.meta.env.VITE_API_BASE_MENU;
 
 export async function fetchMenu(): Promise<MenuItem[]> {
   try {
-    const url = isDevelopment
-      ? `${API_MENU}/api/v1/menu`
-      : `/api/v1/menu`; // Em produção, o proxy do Nginx já inclui o caminho base
+    const url = `${API_MENU}/api/v1/menu`;
 
     const response = await fetch(url);
     const contentType = response.headers.get('content-type');
@@ -42,9 +24,7 @@ export async function fetchMenu(): Promise<MenuItem[]> {
 }
 
 export async function createOrder(data: OrderFormData): Promise<ApiResponse> {
-  const url = isDevelopment
-    ? `${API_ORDERS}/api/v1/orders`
-    : `/api/v1/orders`; // Em produção, o proxy do Nginx já inclui o caminho base
+  const url = `${API_ORDERS}/api/v1/orders`;
 
   const res = await fetch(url, {
     method: 'POST',
