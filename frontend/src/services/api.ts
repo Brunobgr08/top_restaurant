@@ -5,7 +5,9 @@ const getBaseURL = (service: 'orders' | 'menu') => {
   console.log('API_MENU:', (window as any)._env_?.VITE_API_BASE_MENU);
 
   const ordersUrl =
-    import.meta.env.VITE_API_BASE_ORDERS || (window as any)._env_?.VITE_API_BASE_ORDERS;
+    import.meta.env.VITE_API_BASE_ORDERS ||
+    (window as any)._env_?.VITE_API_BASE_ORDERS ||
+    'http://menu-service-production-e4e3.up.railway.app';
 
   const menuUrl = import.meta.env.VITE_API_BASE_MENU || (window as any)._env_?.VITE_API_BASE_MENU;
 
