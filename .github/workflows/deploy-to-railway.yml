@@ -48,19 +48,59 @@ jobs:
           export PYTHONPATH="${PYTHONPATH}:$(pwd)/../.."
           python -m pytest tests/ -v
 
-  deploy-menu-service:
+  prepare-shared:
     runs-on: ubuntu-latest
+    outputs:
+      shared-ready: ${{ steps.prepare.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy shared folder to menu-service
+      - name: Prepare shared artifact
+        id: prepare
         run: |
-          echo "Aguardando 3 segundos para evitar race condition..."
-          sleep 3
+          # Verifica se o shared existe e tem conteúdo
+          if [ -d "./shared" ] && [ "$(ls -A ./shared)" ]; then
+            echo "Shared directory is ready"
+            echo "ready=true" >> $GITHUB_OUTPUT
+
+            # Cria um checksum do shared para verificação
+            find ./shared -type f -name "*.py" -exec md5sum {} \; | sort > shared_checksum.txt
+            echo "Shared files checksum:"
+            cat shared_checksum.txt
+          else
+            echo "Shared directory missing or empty"
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  deploy-menu-service:
+    runs-on: ubuntu-latest
+    needs: prepare-shared
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify shared integrity
+        run: |
+          echo "🔍 Verificando integridade do shared..."
+          if [ ! -d "./shared" ] || [ -z "$(ls -A ./shared)" ]; then
+            echo "ERROR: Shared directory is missing or empty after checkout"
+            ls -la ./
+            exit 1
+          fi
+
+      - name: Copy shared to menu-service
+        run: |
           echo "Copiando shared para menu-service..."
           mkdir -p ./services/menu-service/shared
           cp -r ./shared/* ./services/menu-service/shared/
-          echo "Cópia concluída com sucesso"
+
+          # Verifica se a cópia foi bem sucedida
+          if [ -d "./services/menu-service/shared" ] && [ "$(ls -A ./services/menu-service/shared)" ]; then
+            echo "Shared copiado com sucesso para menu-service"
+          else
+            echo "Falha ao copiar shared para menu-service"
+            exit 1
+          fi
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -72,17 +112,32 @@ jobs:
 
   deploy-order-service:
     runs-on: ubuntu-latest
+    needs: prepare-shared
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy shared folder to order-service
+      - name: Verify shared integrity
         run: |
-          echo "Aguardando 3 segundos para evitar race condition..."
-          sleep 3
-          echo "Copiando shared para order_service..."
-          mkdir -p ./services/order_service/shared
-          cp -r ./shared/* ./services/order_service/shared/
-          echo "Cópia concluída com sucesso"
+          echo "🔍 Verificando integridade do shared..."
+          if [ ! -d "./shared" ] || [ -z "$(ls -A ./shared)" ]; then
+            echo "ERROR: Shared directory is missing or empty after checkout"
+            ls -la ./
+            exit 1
+          fi
+
+      - name: Copy shared to order-service
+        run: |
+          echo "Copiando shared para order-service..."
+          mkdir -p ./services/order-service/shared
+          cp -r ./shared/* ./services/order-service/shared/
+
+          # Verifica se a cópia foi bem sucedida
+          if [ -d "./services/order-service/shared" ] && [ "$(ls -A ./services/order-service/shared)" ]; then
+            echo "Shared copiado com sucesso para order-service"
+          else
+            echo "Falha ao copiar shared para order-service"
+            exit 1
+          fi
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -94,17 +149,32 @@ jobs:
 
   deploy-payment-service:
     runs-on: ubuntu-latest
+    needs: prepare-shared
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy shared folder to payment-service
+      - name: Verify shared integrity
         run: |
-          echo "Aguardando 3 segundos para evitar race condition..."
-          sleep 3
+          echo "🔍 Verificando integridade do shared..."
+          if [ ! -d "./shared" ] || [ -z "$(ls -A ./shared)" ]; then
+            echo "ERROR: Shared directory is missing or empty after checkout"
+            ls -la ./
+            exit 1
+          fi
+
+      - name: Copy shared to payment-service
+        run: |
           echo "Copiando shared para payment-service..."
           mkdir -p ./services/payment-service/shared
           cp -r ./shared/* ./services/payment-service/shared/
-          echo "Cópia concluída com sucesso"
+
+          # Verifica se a cópia foi bem sucedida
+          if [ -d "./services/payment-service/shared" ] && [ "$(ls -A ./services/payment-service/shared)" ]; then
+            echo "Shared copiado com sucesso para payment-service"
+          else
+            echo "Falha ao copiar shared para payment-service"
+            exit 1
+          fi
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
