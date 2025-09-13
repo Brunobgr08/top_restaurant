@@ -17,15 +17,6 @@ COPY . .
 # Copia o shared
 COPY shared /app/shared
 
-
-RUN ls -la .
-
-RUN ls -la ../
-
-RUN ls -la /app
-
-RUN ls -la /app/shared
-
 EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
