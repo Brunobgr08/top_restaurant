@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copia o shared
-COPY shared /app/shared
+# COPY shared /app/shared
 
 EXPOSE 8000
 
