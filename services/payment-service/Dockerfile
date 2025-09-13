@@ -14,6 +14,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o código do serviço
 COPY . .
 
+RUN ls -la .
+
+RUN ls -la ../
+
+RUN ls -la /app
+
+RUN ls -la /app/shared
+
 # Copia o shared
 COPY shared /app/shared
 

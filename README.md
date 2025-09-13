@@ -156,10 +156,10 @@ RAILWAY_PROJECT_ID=<id-do-projeto>
 
 #### URLs de Produção
 
-- **Frontend:** https://frontend-production.up.railway.app
-- **Menu API:** https://menu-service-production.up.railway.app
-- **Order API:** https://order-service-production.up.railway.app
-- **Payment API:** https://payment-service-production.up.railway.app
+- **Frontend:** [https://top-restaurant.up.railway.app/](https://top-restaurant.up.railway.app/)
+- **Menu API:** [https://menu-service-production-e4e3.up.railway.app/api/v1/menu](https://menu-service-production-e4e3.up.railway.app/api/v1/menu)
+- **Order API:** [https://order-service-production-8b9f.up.railway.app/api/v1/orders](https://order-service-production-8b9f.up.railway.app/api/v1/orders)
+- **Payment API:** [https://order-service-production-8b9f.up.railway.app/api/v1/payments](https://order-service-production-8b9f.up.railway.app/api/v1/payments)
 
 ---
 
@@ -215,9 +215,9 @@ make down
 
 ### Serviços Disponíveis (Produção)
 
-- **Frontend:** https://frontend-production.up.railway.app
-- **Menu API:** https://menu-service-production.up.railway.app/docs
-- **Order API:** https://order-service-production.up.railway.app/docs
+- **Frontend:** [https://top-restaurant.up.railway.app/](https://top-restaurant.up.railway.app/)
+- **Menu API:** [https://menu-service-production-e4e3.up.railway.app/docs](https://menu-service-production-e4e3.up.railway.app/docs)
+- **Order API:** [https://order-service-production-8b9f.up.railway.app/docs](https://order-service-production-8b9f.up.railway.app/docs)
 
 #### **Verificação e Monitoramento**
 
@@ -338,9 +338,9 @@ docker compose down --volumes
 
 ### Cobertura Atual
 
-- **Payment Service:** 98%+
+- **Payment Service:** 97%+
 - **Menu Service:** 98%+
-- **Order Service:** 98%+
+- **Order Service:** 94%+
 
 ### Executando Testes
 
