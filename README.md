@@ -26,6 +26,8 @@ Há um frontend simples para interação com o sistema, construído com React, T
 │   │   ├── consumer.py
 │   │   └── producer.py
 │   └── enums.py
+├── .github/workflows
+│   └── deploy-to-railway.yml
 ├── docker-compose.yml
 └── README.md
 ```
@@ -75,7 +77,7 @@ Há um frontend simples para interação com o sistema, construído com React, T
   - Cache de cardápio via Redis
   - Validação de itens com menu-service
 - **Porta:** 5001
-- **Cobertura de Testes:** 98%+
+- **Cobertura de Testes:** 94%+
 
 ### 💳 Payment Service (✅ Completo)
 
@@ -91,7 +93,7 @@ Há um frontend simples para interação com o sistema, construído com React, T
   - Publica: `payment_updated`
   - Consome: `order_created`
 - **Porta:** Interno (não exposta)
-- **Cobertura de Testes:** 98%+
+- **Cobertura de Testes:** 97%+
 
 ### 🔔 Notification Service (🚧 Em Desenvolvimento)
 
@@ -113,13 +115,16 @@ Há um frontend simples para interação com o sistema, construído com React, T
   - ✅ Seleção de tipo de pagamento (manual/online)
   - ✅ Validação visual com animações
   - ✅ Design responsivo
+  - ✅ Notificações de sucesso/erro
 - **Build:** Docker multi-stage com Node.js
 - **Porta:** 3000
 
 ## 📦 Build e Deploy
 
-### Processo de Build
+### Desenvolvimento Local
+
 1. **Stage 1**: Build com Node.js
+
    - Instala dependências
    - Executa `npm run build`
    - Gera pasta `dist/`
@@ -129,6 +134,32 @@ Há um frontend simples para interação com o sistema, construído com React, T
    - Usa servidor `serve` para arquivos estáticos
    - Suporte a SPA com fallback para index.html
    - Expõe na porta 3000
+
+### Deploy em Produção (Railway)
+
+O projeto possui pipeline automatizado de CI/CD via GitHub Actions:
+
+- **Arquivo:** `.github/workflows/deploy-to-railway.yml`
+- **Triggers:** Push para `main` e `develop`, PRs para `main`
+- **Processo:**
+  1. **Testes:** Executa testes de todos os serviços
+  2. **Deploy:** Deploy automático para Railway de cada serviço
+  3. **Serviços:** menu-service, order-service, payment-service, frontend
+
+#### Configuração Railway
+
+```env
+# Secrets necessários no GitHub
+RAILWAY_TOKEN=<seu-token-railway>
+RAILWAY_PROJECT_ID=<id-do-projeto>
+```
+
+#### URLs de Produção
+
+- **Frontend:** https://frontend-production.up.railway.app
+- **Menu API:** https://menu-service-production.up.railway.app
+- **Order API:** https://order-service-production.up.railway.app
+- **Payment API:** https://payment-service-production.up.railway.app
 
 ---
 
@@ -152,32 +183,44 @@ Há um frontend simples para interação com o sistema, construído com React, T
 ## ⚙️ Executando o Projeto
 
 ### Pré-requisitos
+
 - Docker 20.10+
 - Docker Compose 2.0+
-- 8GB RAM disponível (recomendado)
+- Node.js 18+ (para desenvolvimento frontend)
 - Make (geralmente pré-instalado no Linux/macOS)
 
 ### Comandos MakeFile - Execução Rápida
 
 #### **Comandos Essenciais**
+
 ```bash
-# Setup inicial completo (instala dependências, sobe serviços, cria tópicos)
+# Setup inicial completo
 make setup
 
 # Subir todos os serviços
 make up
 
-# Subir apenas serviços essenciais (sem auth/notification)
+# Subir apenas serviços essenciais
 make up-core
 
 # Parar todos os serviços
 make down
-
-# Reiniciar todos os serviços
-make restart
 ```
 
+### Serviços Disponíveis (Desenvolvimento)
+
+- **Frontend:** http://localhost:3000
+- **Menu API:** http://localhost:5003/docs
+- **Order API:** http://localhost:5001/docs
+
+### Serviços Disponíveis (Produção)
+
+- **Frontend:** https://frontend-production.up.railway.app
+- **Menu API:** https://menu-service-production.up.railway.app/docs
+- **Order API:** https://order-service-production.up.railway.app/docs
+
 #### **Verificação e Monitoramento**
+
 ```bash
 # Verificar saúde de todos os serviços
 make health
@@ -195,6 +238,7 @@ make logs-menu-service
 ```
 
 #### **Serviços Individuais**
+
 ```bash
 # Subir um serviço específico
 make up-order-service
@@ -214,6 +258,7 @@ make pip-install-order-service
 ```
 
 #### **Frontend**
+
 ```bash
 # Instalar dependências do frontend
 make install-frontend
@@ -229,6 +274,7 @@ make build-frontend
 ```
 
 #### **Banco de Dados**
+
 ```bash
 # Conectar ao banco de dados de um serviço
 make db-order-service
@@ -242,6 +288,7 @@ make backup-menu-service
 ```
 
 #### **Kafka**
+
 ```bash
 # Criar tópicos do Kafka
 make kafka-topics
@@ -251,6 +298,7 @@ make kafka-list
 ```
 
 #### **Limpeza e Reset**
+
 ```bash
 # Limpeza completa (remove containers, volumes, imagens)
 make clean
@@ -266,6 +314,7 @@ make coverage-clean
 ```
 
 ### Comandos Docker Tradicionais (Alternativa)
+
 ```bash
 # Comando principal
 docker compose up --build
@@ -283,12 +332,7 @@ docker exec -it top-restaurant_payment-service_1 pytest --cov=.
 docker compose down --volumes
 ```
 
-### Serviços Disponíveis
-
-- **Frontend:** http://localhost:3000
-- **Menu API:** http://localhost:5003/docs
-- **Order API:** http://localhost:5001/docs
-
+---
 
 ## 🧪 Testes e Qualidade
 
@@ -328,7 +372,7 @@ make open-coverage-order-service
 - [ ] **Dashboard:** Painel administrativo para pedidos
 - [ ] **Gateway:** API Gateway com rate limiting
 - [ ] **Monitoring:** Prometheus + Grafana
-- [ ] **CI/CD:** Pipeline automatizado
+- [x] **CI/CD:** Pipeline automatizado (Railway)
 
 ### Melhorias Técnicas
 
@@ -337,6 +381,53 @@ make open-coverage-order-service
 - [ ] Logs estruturados (JSON)
 - [ ] Health checks mais robustos
 - [ ] Backup automatizado dos bancos
+- [x] Deploy automatizado via GitHub Actions
+
+---
+
+## 🚀 Deploy e Produção
+
+### GitHub Actions Pipeline
+
+O projeto utiliza GitHub Actions para CI/CD automatizado:
+
+```yaml
+# .github/workflows/deploy-to-railway.yml
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+```
+
+**Etapas do Pipeline:**
+
+1. **Testes:** Execução completa da suíte de testes
+2. **Build:** Construção das imagens Docker
+3. **Deploy:** Deploy automático para Railway
+
+### Configuração de Produção
+
+#### Variáveis de Ambiente (Railway)
+
+```env
+# Frontend
+VITE_API_BASE_ORDERS=https://order-service-production.up.railway.app
+VITE_API_BASE_MENU=https://menu-service-production.up.railway.app
+
+# Backend Services
+DB_HOST=<railway-postgres-host>
+DB_PORT=5432
+KAFKA_BROKERS=<kafka-cloud-brokers>
+```
+
+#### Monitoramento
+
+- **Logs:** Centralizados via Railway Dashboard
+- **Health Checks:** Configurados para cada serviço
+- **Uptime:** Monitoramento automático Railway
 
 ---
 
@@ -371,7 +462,7 @@ JWT_SECRET=super-secret-key
 
 ## 📝 Observações Técnicas
 
-- **Desenvolvimento:** `UVICORN_RELOAD=true` no payment-service (remover em produção)
+- **Desenvolvimento:** `UVICORN_RELOAD=true` no payment-service (removido em produção)
 - **Rede:** Todos os serviços na mesma rede Docker para comunicação interna
 - **Volumes:** Dados persistidos em volumes nomeados
 - **Logs:** Centralizados via Docker Compose logs
