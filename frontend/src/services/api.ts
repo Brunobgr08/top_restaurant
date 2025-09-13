@@ -7,6 +7,8 @@ export async function fetchMenu(): Promise<MenuItem[]> {
   try {
     const url = `${API_MENU}/api/v1/menu`;
 
+    console.log('URL:', url);
+
     const response = await fetch(url);
     const contentType = response.headers.get('content-type');
 
@@ -25,6 +27,8 @@ export async function fetchMenu(): Promise<MenuItem[]> {
 
 export async function createOrder(data: OrderFormData): Promise<ApiResponse> {
   const url = `${API_ORDERS}/api/v1/orders`;
+
+  console.log('URL:', url);
 
   const res = await fetch(url, {
     method: 'POST',
