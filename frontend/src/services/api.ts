@@ -1,7 +1,16 @@
 import { MenuItem, OrderFormData, ApiResponse } from './types';
 
-const API_ORDERS = import.meta.env.VITE_API_BASE_ORDERS;
-const API_MENU = import.meta.env.VITE_API_BASE_MENU;
+const getBaseURL = (service: 'orders' | 'menu') => {
+  return service === 'orders'
+    ? import.meta.env.VITE_API_BASE_ORDERS
+    : import.meta.env.VITE_API_BASE_MENU;
+};
+
+const API_ORDERS = getBaseURL('orders');
+const API_MENU = getBaseURL('menu');
+
+console.log('API_ORDERS:', API_ORDERS);
+console.log('API_MENU:', API_MENU);
 
 export async function fetchMenu(): Promise<MenuItem[]> {
   try {
