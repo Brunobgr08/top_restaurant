@@ -15,7 +15,7 @@ RUN npm install --no-audit --prefer-offline --legacy-peer-deps
 COPY . .
 
 # 4. Copia variáveis de produção
-COPY .env.production .env
+COPY env.production .env
 
 # 5. Executa o BUILD de produção (não dev!)
 RUN npm run build
