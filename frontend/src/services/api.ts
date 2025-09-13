@@ -1,8 +1,11 @@
 import { MenuItem, OrderFormData, ApiResponse } from './types';
 
 const getBaseURL = (service: 'orders' | 'menu') => {
+  console.log('API_ORDERS:', (window as any)._env_?.VITE_API_BASE_ORDERS);
+  console.log('API_MENU:', (window as any)._env_?.VITE_API_BASE_MENU);
 
-  const ordersUrl = import.meta.env.VITE_API_BASE_ORDERS || (window as any)._env_?.VITE_API_BASE_ORDERS;
+  const ordersUrl =
+    import.meta.env.VITE_API_BASE_ORDERS || (window as any)._env_?.VITE_API_BASE_ORDERS;
 
   const menuUrl = import.meta.env.VITE_API_BASE_MENU || (window as any)._env_?.VITE_API_BASE_MENU;
 
