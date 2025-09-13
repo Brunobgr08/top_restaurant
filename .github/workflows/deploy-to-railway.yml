@@ -55,10 +55,12 @@ jobs:
 
       - name: Copy shared folder to menu-service
         run: |
-          echo "Copiando pasta shared para menu-service..."
-          cp -r ./shared ./services/menu-service/
-          echo "Estrutura do menu-service após cópia:"
-          ls -la ./services/menu-service/
+          echo "Aguardando 3 segundos para evitar race condition..."
+          sleep 3
+          echo "Copiando shared para menu-service..."
+          mkdir -p ./services/menu-service/shared
+          cp -r ./shared/* ./services/menu-service/shared/
+          echo "Cópia concluída com sucesso"
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -75,10 +77,12 @@ jobs:
 
       - name: Copy shared folder to order-service
         run: |
-          echo "Copiando pasta shared para order-service..."
-          cp -r ./shared ./services/order-service/
-          echo "Estrutura do order-service após cópia:"
-          ls -la ./services/order-service/
+          echo "Aguardando 3 segundos para evitar race condition..."
+          sleep 3
+          echo "Copiando shared para order_service..."
+          mkdir -p ./services/order_service/shared
+          cp -r ./shared/* ./services/order_service/shared/
+          echo "Cópia concluída com sucesso"
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -95,10 +99,12 @@ jobs:
 
       - name: Copy shared folder to payment-service
         run: |
-          echo "Copiando pasta shared para payment-service..."
-          cp -r ./shared ./services/payment-service/
-          echo "Estrutura do payment-service após cópia:"
-          ls -la ./services/payment-service/
+          echo "Aguardando 3 segundos para evitar race condition..."
+          sleep 3
+          echo "Copiando shared para payment-service..."
+          mkdir -p ./services/payment-service/shared
+          cp -r ./shared/* ./services/payment-service/shared/
+          echo "Cópia concluída com sucesso"
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
