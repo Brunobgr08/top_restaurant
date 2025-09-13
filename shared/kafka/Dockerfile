@@ -9,6 +9,6 @@ RUN apt-get update && \
 
 COPY create_topics.py .
 
-RUN pip install --no-cache-dir kafka-python
+RUN pip install --no-cache-dir kafka-python python-dotenv
 
 CMD ["python", "create_topics.py"]

@@ -1,0 +1,22 @@
+## DESENVOLVIMENTO
+# Estágio de desenvolvimento
+FROM node:18-alpine AS dev
+WORKDIR /app
+
+# Copia arquivos necessários
+COPY package.json package-lock.json ./
+COPY vite.config.js ./
+COPY tsconfig*.json ./
+
+# Instala dependências
+RUN npm install --no-audit --prefer-offline --legacy-peer-deps
+
+# Copia código fonte
+COPY . .
+
+# Copia variáveis de desenvolvimento
+COPY .env.development .env
+
+# Expõe porta e inicia servidor de desenvolvimento
+EXPOSE 3000
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
