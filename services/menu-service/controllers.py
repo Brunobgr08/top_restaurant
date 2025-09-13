@@ -20,6 +20,16 @@ def get_menu_item_by_id(db: Session, item_id: UUID) -> MenuItem:
     return item
 
 def create_menu_item(db: Session, item_data: MenuItemCreate):
+    existing_item = db.query(MenuItem).filter(
+        MenuItem.name.ilike(item_data.name)
+    ).first()
+
+    if existing_item:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Já existe um item no menu com o nome '{item_data.name}'"
+        )
+
     item = MenuItem(**item_data.model_dump())
     db.add(item)
     db.commit()
