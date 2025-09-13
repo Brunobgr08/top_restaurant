@@ -24,6 +24,8 @@ frontend/
 │   ├── lib/           # Utilitários
 │   └── main.tsx       # Entry point
 ├── public/            # Assets estáticos
+├── .env.development   # Variáveis de desenvolvimento
+├── .env.production    # Variáveis de produção
 └── Dockerfile         # Build multi-stage com Node.js
 ```
 
@@ -54,64 +56,27 @@ docker run -p 3000:3000 toprestaurant-frontend
 ## 🔧 Configuração
 
 ### Variáveis de Ambiente
+
+#### Desenvolvimento (`.env.development`)
 ```env
-# APIs (configuradas no vite.config.js)
 VITE_API_BASE_ORDERS=http://localhost:5001
 VITE_API_BASE_MENU=http://localhost:5003
 ```
 
+#### Produção (`.env.production`)
+```env
+VITE_API_BASE_ORDERS=https://order-service-production.up.railway.app
+VITE_API_BASE_MENU=https://menu-service-production.up.railway.app
+```
+
 ### Proxy de Desenvolvimento
-O Vite está configurado para fazer proxy das APIs:
+O Vite está configurado para fazer proxy das APIs em desenvolvimento:
 - `/orders/*` → `order-service:5001`
 - `/menu/*` → `menu-service:5003`
 
-## 📱 Funcionalidades
+## � Build e Deploy
 
-### ✅ Implementadas
-- [x] Visualização do cardápio completo
-- [x] Seleção de itens com quantidade
-- [x] Cálculo automático do total
-- [x] Formulário de pedido validado
-- [x] Seleção de tipo de pagamento
-- [x] Animações e feedback visual
-- [x] Design responsivo
-- [x] Notificações de sucesso/erro
-
-### 🚧 Em Desenvolvimento
-- [ ] Autenticação de usuários
-- [ ] Histórico de pedidos
-- [ ] Status em tempo real
-- [ ] Carrinho persistente
-
-## 🎨 Design System
-
-### Cores Principais
-- Primary: Blue (pedidos)
-- Success: Green (confirmações)
-- Warning: Yellow (alertas)
-- Error: Red (erros)
-
-### Componentes
-- **Card**: Container principal
-- **Button**: Ações primárias/secundárias
-- **Select**: Seleção de opções
-- **Input**: Campos de formulário
-- **Toast**: Notificações
-
-## 🧪 Scripts Disponíveis
-
-```bash
-npm run dev          # Servidor de desenvolvimento
-npm run build        # Build para produção
-npm run preview      # Preview do build
-npm run lint         # Linting com ESLint
-npm run start        # Servidor de produção
-npm run serve        # Alias para start
-```
-
-## 📦 Build e Deploy
-
-### Processo de Build
+### Processo de Build Local
 1. **Stage 1**: Build com Node.js
    - Instala dependências
    - Executa `npm run build`
@@ -121,6 +86,24 @@ npm run serve        # Alias para start
    - Copia arquivos do `dist/`
    - Usa `serve` para servir arquivos estáticos
    - Expõe na porta 3000
+
+### Deploy Automatizado (Railway)
+
+O frontend é automaticamente deployado via GitHub Actions:
+
+```yaml
+# .github/workflows/deploy-to-railway.yml
+deploy-frontend:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - name: Deploy Frontend
+      run: railway up --service frontend --detach
+```
+
+**URLs:**
+- **Desenvolvimento:** http://localhost:3000
+- **Produção:** https://frontend-production.up.railway.app
 
 ### Servidor Node.js (serve)
 ```bash
@@ -135,11 +118,14 @@ serve -s dist -l 3000
 ## 🔗 Integrações
 
 ### APIs Consumidas
-- **Menu Service** (`/api/v1/menu`)
-  - GET: Lista itens do cardápio
 
-- **Order Service** (`/api/v1/orders`)
-  - POST: Cria novo pedido
+#### Desenvolvimento
+- **Menu Service:** http://localhost:5003/api/v1/menu
+- **Order Service:** http://localhost:5001/api/v1/orders
+
+#### Produção
+- **Menu Service:** https://menu-service-production.up.railway.app/api/v1/menu
+- **Order Service:** https://order-service-production.up.railway.app/api/v1/orders
 
 ### Fluxo de Pedido
 1. Usuário seleciona itens do menu
@@ -147,6 +133,17 @@ serve -s dist -l 3000
 3. Escolhe tipo de pagamento
 4. Submete pedido
 5. Recebe confirmação
+
+## 🧪 Scripts Disponíveis
+
+```bash
+npm run dev          # Servidor de desenvolvimento
+npm run build        # Build para produção
+npm run preview      # Preview do build
+npm run lint         # Linting com ESLint
+npm run start        # Servidor de produção
+npm run serve        # Alias para start
+```
 
 ## 🚀 Próximos Passos
 

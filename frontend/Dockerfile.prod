@@ -1,5 +1,5 @@
 ## PRODUÇÃO
-Estágio de construção
+# Estágio de construção
 FROM node:18-alpine AS builder
 WORKDIR /app
 

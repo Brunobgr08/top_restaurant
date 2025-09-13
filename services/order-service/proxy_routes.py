@@ -7,7 +7,7 @@ load_dotenv()
 
 router = APIRouter()
 
-PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "payment-service:5002")
+PAYMENT_SERVICE_URL = os.getenv("PAYMENT_SERVICE_URL", "http://payment-service:5002")
 
 async def proxy_request(request: Request, upstream_url: str):
     try:
@@ -37,10 +37,12 @@ async def proxy_request(request: Request, upstream_url: str):
 @router.api_route("/payments", methods=["GET"])
 async def list_payments_proxy(request: Request):
     upstream_url = f"{PAYMENT_SERVICE_URL}/api/v1/payments"
+
     return await proxy_request(request, upstream_url)
 
 
 @router.api_route("/payments/confirm/{order_id}", methods=["PUT"])
 async def confirm_payment_proxy(order_id: str, request: Request):
     upstream_url = f"{PAYMENT_SERVICE_URL}/api/v1/payments/confirm/{order_id}"
+
     return await proxy_request(request, upstream_url)

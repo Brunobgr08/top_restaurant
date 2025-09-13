@@ -2,13 +2,12 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Evita problemas de DNS e SSL em ambientes Docker minimalistas
 RUN apt-get update && \
     apt-get install -y netcat-openbsd iputils-ping ca-certificates wget && \
     rm -rf /var/lib/apt/lists/*
 
-COPY create_topics.py .
+COPY create_topics.py wait_for_kafka.py ./
 
 RUN pip install --no-cache-dir kafka-python python-dotenv
 
-CMD ["python", "create_topics.py"]
+CMD ["sh", "-c", "python wait_for_kafka.py && python create_topics.py"]

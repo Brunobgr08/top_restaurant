@@ -4,7 +4,23 @@ services:
       context: ./shared/kafka
       dockerfile: Dockerfile
     depends_on:
-      - kafka-controller
-      - kafka-broker-2
-      - kafka-broker-3
+      kafka-controller:
+        condition: service_healthy
+      kafka-broker-2:
+        condition: service_healthy
+      kafka-broker-3:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: 'kafka-controller:9092,kafka-broker-2:9094,kafka-broker-3:9095'
     restart: on-failure
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import socket; socket.create_connection(('kafka-controller', 9092), 2)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
