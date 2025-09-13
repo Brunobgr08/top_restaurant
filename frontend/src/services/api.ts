@@ -1,11 +1,7 @@
 import { MenuItem, OrderFormData, ApiResponse } from './types';
 
 const getBaseURL = (service: 'orders' | 'menu') => {
-  console.log('API_ORDERS:', (window as any)._env_?.VITE_API_BASE_ORDERS);
-  console.log('API_MENU:', (window as any)._env_?.VITE_API_BASE_MENU);
-
-  const ordersUrl =
-    import.meta.env.VITE_API_BASE_ORDERS || (window as any)._env_?.VITE_API_BASE_ORDERS;
+  const ordersUrl = import.meta.env.VITE_API_BASE_ORDERS || (window as any)._env_?.VITE_API_BASE_ORDERS;
 
   const menuUrl = import.meta.env.VITE_API_BASE_MENU || (window as any)._env_?.VITE_API_BASE_MENU;
 
@@ -15,14 +11,9 @@ const getBaseURL = (service: 'orders' | 'menu') => {
 const API_ORDERS = getBaseURL('orders');
 const API_MENU = getBaseURL('menu');
 
-console.log('API_ORDERS:', API_ORDERS);
-console.log('API_MENU:', API_MENU);
-
 export async function fetchMenu(): Promise<MenuItem[]> {
   try {
     const url = `${API_MENU}/api/v1/menu`;
-
-    console.log('URL:', url);
 
     const response = await fetch(url);
     const contentType = response.headers.get('content-type');
@@ -42,8 +33,6 @@ export async function fetchMenu(): Promise<MenuItem[]> {
 
 export async function createOrder(data: OrderFormData): Promise<ApiResponse> {
   const url = `${API_ORDERS}/api/v1/orders`;
-
-  console.log('URL:', url);
 
   const res = await fetch(url, {
     method: 'POST',
